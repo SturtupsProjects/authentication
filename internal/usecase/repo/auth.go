@@ -1,170 +1,187 @@
 package repo
 
 import (
-	"authentification/internal/entity"
-	"authentification/internal/usecase"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"strings"
+
+	pb "authentification/pkg/generated/user"
+	"github.com/jmoiron/sqlx"
 )
 
-type userRepo struct {
+type UserRepo struct {
 	db *sqlx.DB
 }
 
-func NewUserRepo(db *sqlx.DB) usecase.UsersRepo {
-	return &userRepo{db: db}
+func NewUserRepo(db *sqlx.DB) *UserRepo {
+	return &UserRepo{db: db}
 }
 
-func (u *userRepo) AddAdmin(in entity.AdminPass) (entity.Message, error) {
-	res := entity.Message{}
-
-	_, err := u.db.Exec(`insert into users(first_name, last_name, email, phone_number, password, role)
-values ($1, $2, $3, $4, $5, $6)`, "admin", "admin", "admin", in.Login, in.Password, "admin")
+func (u *UserRepo) AddAdmin(response *pb.MessageResponse) (*pb.MessageResponse, error) {
+	_, err := u.db.Exec(
+		`INSERT INTO users(first_name, last_name, email, phone_number, password, role)
+		VALUES ($1, $2, $3, $4, $5, $6)`,
+		"admin", "admin", "admin@admin.com", "admin", response.Message, "admin",
+	)
 	if err != nil {
-		return res, err
+		return nil, fmt.Errorf("failed to add admin: %w", err)
 	}
-
-	res.Message = "Owner added"
-
-	return res, nil
+	return &pb.MessageResponse{Message: "Admin added successfully"}, nil
 }
 
-func (u *userRepo) CreateUser(in entity.User) (entity.UserRequest, error) {
-	var user entity.UserRequest
+func (u *UserRepo) CreateUser(in *pb.UserRequest) (*pb.UserResponse, error) {
+	var user pb.UserResponse
 	query := `
 		INSERT INTO users (first_name, last_name, email, phone_number, password, role)
 		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING user_id, first_name, last_name, email, phone_number, role, created_at
 	`
 	err := u.db.QueryRowx(query, in.FirstName, in.LastName, in.Email, in.PhoneNumber, in.Password, in.Role).
-		Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Email, &user.PhoneNumber, &user.Role, &user.CreatedAt)
+		Scan(&user.UserId, &user.FirstName, &user.LastName, &user.Email, &user.PhoneNumber, &user.Role, &user.CreatedAt)
 	if err != nil {
-		return entity.UserRequest{}, fmt.Errorf("failed to create user: %w", err)
+		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
-	return user, nil
+	return &user, nil
 }
 
-// GetUser retrieves a user by their ID.
-func (u *userRepo) GetUser(in entity.UserID) (entity.UserRequest, error) {
-	var user entity.UserRequest
+func (u *UserRepo) GetUser(in *pb.UserIDRequest) (*pb.UserResponse, error) {
+	var user pb.UserResponse
 	query := `SELECT user_id, first_name, last_name, email, phone_number, role, created_at FROM users WHERE user_id = $1`
-	err := u.db.Get(&user, query, in.ID)
+	err := u.db.Get(&user, query, in.Id)
 	if err != nil {
-		return entity.UserRequest{}, fmt.Errorf("failed to get user: %w", err)
+		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
-	return user, nil
+	return &user, nil
 }
 
-func (u *userRepo) GetListUser(in entity.FilterUser) (entity.UserList, error) {
-	var users []entity.UserRequest
+func (u *UserRepo) GetListUser(in *pb.FilterUserRequest) (*pb.UserListResponse, error) {
+	var users []*pb.UserResponse
 	var queryBuilder strings.Builder
-	var args []interface{}
-
-	// Начинаем строить базовый запрос
-	queryBuilder.WriteString(`
-		SELECT user_id, first_name, last_name, email, phone_number, role, created_at
-		FROM users
-		WHERE 1=1
-	`)
-
-	// Добавляем фильтр по имени, если поле не пустое
-	if in.FirstName != "" {
-		queryBuilder.WriteString(" AND first_name ILIKE '%' || $1 || '%'")
-		args = append(args, in.FirstName)
-	}
-
-	// Добавляем фильтр по фамилии, если поле не пустое
-	if in.LastName != "" {
-		queryBuilder.WriteString(" AND last_name ILIKE '%' || $2 || '%'")
-		args = append(args, in.LastName)
-	}
-
-	// Добавляем фильтр по роли, если поле не пустое
-	if in.Role != "" {
-		queryBuilder.WriteString(" AND role = $3")
-		args = append(args, in.Role)
-	}
-
-	// Заканчиваем запрос сортировкой
-	queryBuilder.WriteString(" ORDER BY created_at DESC")
-
-	// Выполняем запрос
-	query := queryBuilder.String()
-	err := u.db.Select(&users, query, args...)
-	if err != nil {
-		return entity.UserList{}, fmt.Errorf("failed to list users: %w", err)
-	}
-	return entity.UserList{Users: users}, nil
-}
-
-// DeleteUser removes a user by their ID.
-func (u *userRepo) DeleteUser(in entity.UserID) (entity.Message, error) {
-	query := `DELETE FROM users WHERE user_id = $1`
-	res, err := u.db.Exec(query, in.ID)
-	if err != nil {
-		return entity.Message{}, fmt.Errorf("failed to delete user: %w", err)
-	}
-	rows, _ := res.RowsAffected()
-	return entity.Message{Message: fmt.Sprintf("Deleted %d user(s)", rows)}, nil
-}
-
-// UpdateUser modifies the fields of a user based on the fields provided in UserRequest.
-func (u *userRepo) UpdateUser(in entity.UserRequest) (entity.UserRequest, error) {
-	var user entity.UserRequest
-	query := `UPDATE users SET `
 	var args []interface{}
 	argCounter := 1
 
-	// Dynamically build the query based on non-empty fields
+	queryBuilder.WriteString(`SELECT user_id, first_name, last_name, email, phone_number, role, created_at FROM users WHERE 1=1`)
+
 	if in.FirstName != "" {
-		query += fmt.Sprintf("first_name = $%d, ", argCounter)
-		args = append(args, in.FirstName)
+		queryBuilder.WriteString(fmt.Sprintf(" AND first_name ILIKE $%d", argCounter))
+		args = append(args, "%"+in.FirstName+"%")
 		argCounter++
 	}
+
 	if in.LastName != "" {
-		query += fmt.Sprintf("last_name = $%d, ", argCounter)
-		args = append(args, in.LastName)
+		queryBuilder.WriteString(fmt.Sprintf(" AND last_name ILIKE $%d", argCounter))
+		args = append(args, "%"+in.LastName+"%")
 		argCounter++
 	}
-	if in.Email != "" {
-		query += fmt.Sprintf("email = $%d, ", argCounter)
-		args = append(args, in.Email)
-		argCounter++
-	}
-	if in.PhoneNumber != "" {
-		query += fmt.Sprintf("phone_number = $%d, ", argCounter)
-		args = append(args, in.PhoneNumber)
-		argCounter++
-	}
+
 	if in.Role != "" {
-		query += fmt.Sprintf("role = $%d, ", argCounter)
+		queryBuilder.WriteString(fmt.Sprintf(" AND role = $%d", argCounter))
 		args = append(args, in.Role)
 		argCounter++
 	}
 
-	// Remove trailing comma and add WHERE clause
-	query = query[:len(query)-2] + fmt.Sprintf(" WHERE user_id = $%d RETURNING user_id, first_name, last_name, email, phone_number, role, created_at", argCounter)
-	args = append(args, in.UserID)
+	queryBuilder.WriteString(" ORDER BY created_at DESC")
 
-	// Execute the query
-	err := u.db.QueryRowx(query, args...).Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Email, &user.PhoneNumber, &user.Role, &user.CreatedAt)
+	query := queryBuilder.String()
+	err := u.db.Select(&users, query, args...)
 	if err != nil {
-		return entity.UserRequest{}, fmt.Errorf("failed to update user: %w", err)
+		return nil, fmt.Errorf("failed to list users: %w", err)
 	}
 
-	return user, nil
+	return &pb.UserListResponse{Users: users}, nil
 }
 
-func (u *userRepo) LogIn(in entity.PhoneNumber) (entity.LogInReq, error) {
-	res := entity.LogInReq{}
-
-	err := u.db.Get(&res, `select user_id, first_name, phone_number, role from users
-	where phone_number = $1`, in.PhoneNumber)
-
+func (u *UserRepo) DeleteUser(in *pb.UserIDRequest) (*pb.MessageResponse, error) {
+	query := `DELETE FROM users WHERE user_id = $1`
+	res, err := u.db.Exec(query, in.Id)
 	if err != nil {
-		return entity.LogInReq{}, err
+		return nil, fmt.Errorf("failed to delete user: %w", err)
+	}
+	rows, _ := res.RowsAffected()
+	return &pb.MessageResponse{Message: fmt.Sprintf("Deleted %d user(s)", rows)}, nil
+}
+
+func (u *UserRepo) UpdateUser(in *pb.UserRequest) (*pb.UserResponse, error) {
+	if in.UserId == "" {
+		return nil, fmt.Errorf("user ID is required for updating a user")
 	}
 
-	return res, nil
+	var (
+		queryBuilder strings.Builder
+		args         []interface{}
+		argIndex     = 1
+	)
+
+	queryBuilder.WriteString("UPDATE users SET ")
+
+	if in.FirstName != "" {
+		queryBuilder.WriteString(fmt.Sprintf("first_name = $%d, ", argIndex))
+		args = append(args, in.FirstName)
+		argIndex++
+	}
+
+	if in.LastName != "" {
+		queryBuilder.WriteString(fmt.Sprintf("last_name = $%d, ", argIndex))
+		args = append(args, in.LastName)
+		argIndex++
+	}
+
+	if in.Email != "" {
+		queryBuilder.WriteString(fmt.Sprintf("email = $%d, ", argIndex))
+		args = append(args, in.Email)
+		argIndex++
+	}
+
+	if in.Password != "" {
+		queryBuilder.WriteString(fmt.Sprintf("password = $%d, ", argIndex))
+		args = append(args, in.Password)
+		argIndex++
+	}
+
+	if in.PhoneNumber != "" {
+		queryBuilder.WriteString(fmt.Sprintf("phone_number = $%d, ", argIndex))
+		args = append(args, in.PhoneNumber)
+		argIndex++
+	}
+
+	if in.Role != "" {
+		queryBuilder.WriteString(fmt.Sprintf("role = $%d, ", argIndex))
+		args = append(args, in.Role)
+		argIndex++
+	}
+
+	// Remove the trailing comma and space
+	query := queryBuilder.String()
+	query = strings.TrimSuffix(query, ", ")
+
+	// Add WHERE clause
+	query += fmt.Sprintf(" WHERE user_id = $%d RETURNING user_id, first_name, last_name, email, phone_number, role, created_at", argIndex)
+	args = append(args, in.UserId)
+
+	// Execute the query
+	var user pb.UserResponse
+	err := u.db.QueryRowx(query, args...).Scan(
+		&user.UserId,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.PhoneNumber,
+		&user.Role,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to update user: %w", err)
+	}
+
+	return &user, nil
+}
+
+func (u *UserRepo) LogIn(in *pb.LogInRequest) (*pb.LogInResponse, error) {
+	var loginResp pb.LogInResponse
+	query := `SELECT user_id, first_name, phone_number, role FROM users WHERE phone_number = $1`
+	err := u.db.Get(&loginResp, query, in.PhoneNumber)
+	if err != nil {
+		return nil, fmt.Errorf("login failed: %w", err)
+	}
+	return &loginResp, nil
 }

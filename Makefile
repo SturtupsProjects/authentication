@@ -3,7 +3,7 @@ CURRENT_DIR = $(shell pwd)
 DB_URL := postgres://postgres:123321@localhost:5432/crm_admin_auth?sslmode=disable
 
 proto-gen:
-	./scripts/gen-proto.sh ${CURRENT_DIR}
+	./pkg/scripts/gen-proto.sh ${CURRENT_DIR}
 
 mig-up:
 	migrate -path migrations -database '${DB_URL}' -verbose up

@@ -1,7 +1,7 @@
 package token
 
 import (
-	"authentification/internal/entity"
+	pb "authentification/pkg/generated/user"
 	"github.com/golang-jwt/jwt"
 	"os"
 	"time"
@@ -14,9 +14,9 @@ var (
 	ExpiredRefresh   int
 )
 
-func GenerateAccessToken(in entity.LogInReq) (string, error) {
+func GenerateAccessToken(in *pb.LogInResponse) (string, error) {
 	claims := Claims{
-		Id:          in.Id,
+		Id:          in.UserId,
 		FirstName:   in.FirstName,
 		PhoneNumber: in.PhoneNumber,
 		Role:        in.Role,
@@ -33,9 +33,9 @@ func GenerateAccessToken(in entity.LogInReq) (string, error) {
 	return str, err
 }
 
-func GenerateRefreshToken(in entity.LogInReq) (string, error) {
+func GenerateRefreshToken(in *pb.LogInResponse) (string, error) {
 	claims := Claims{
-		Id:          in.Id,
+		Id:          in.UserId,
 		FirstName:   in.FirstName,
 		PhoneNumber: in.PhoneNumber,
 		Role:        in.Role,

@@ -1,0 +1,3 @@
+[submodule "internal/protocol-buffers"]
+	path = internal/protocol-buffers
+	url = git@github.com:SturtupsProjects/protocol-buffers.git

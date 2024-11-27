@@ -14,7 +14,7 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func ConfigToken(config config.Config) error {
+func ConfigToken(config *config.Config) error {
 
 	exAcc, err := strconv.Atoi(config.EXPIRED_ACCESS)
 	if err != nil {

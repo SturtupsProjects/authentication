@@ -13,6 +13,8 @@ type Config struct {
 	DB_HOST string
 	DB_PORT string
 
+	ADMIN_PASSWORD string
+
 	ACCESS_TOKEN    string
 	REFRESH_TOKEN   string
 	EXPIRED_ACCESS  string
@@ -35,6 +37,8 @@ func NewConfig() Config {
 	config.DB_PORT = os.Getenv("DB_PORT")
 
 	config.RUN_PORT = os.Getenv("RUN_PORT")
+
+	config.ADMIN_PASSWORD = os.Getenv("ADMIN_PASSWORD")
 
 	config.ACCESS_TOKEN = os.Getenv("ACCESS_TOKEN")
 	config.REFRESH_TOKEN = os.Getenv("REFRESH_TOKEN")

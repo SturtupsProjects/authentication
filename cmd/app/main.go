@@ -1,12 +1,12 @@
 package main
 
 import (
-	"authentification/internal/app"
 	"authentification/config"
+	"authentification/internal/app"
 )
 
 func main() {
 	cfg := config.NewConfig()
 
-	app.Run(cfg)
+	app.Run(&cfg)
 }

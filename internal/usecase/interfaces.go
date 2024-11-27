@@ -1,13 +1,13 @@
 package usecase
 
-import "authentification/internal/entity"
+import pb "authentification/pkg/generated/user"
 
 type UsersRepo interface {
-	AddAdmin(in entity.AdminPass) (entity.Message, error)
-	CreateUser(in entity.User) (entity.UserRequest, error)
-	GetUser(in entity.UserID) (entity.UserRequest, error)
-	GetListUser(in entity.FilterUser) (entity.UserList, error)
-	DeleteUser(in entity.UserID) (entity.Message, error)
-	UpdateUser(in entity.UserRequest) (entity.UserRequest, error)
-	LogIn(in entity.PhoneNumber) (entity.LogInReq, error)
+	AddAdmin(in *pb.MessageResponse) (*pb.MessageResponse, error)
+	CreateUser(in *pb.UserRequest) (*pb.UserResponse, error)
+	GetUser(in *pb.UserIDRequest) (*pb.UserResponse, error)
+	GetListUser(in *pb.FilterUserRequest) (*pb.UserListResponse, error)
+	DeleteUser(in *pb.UserIDRequest) (*pb.MessageResponse, error)
+	UpdateUser(in *pb.UserRequest) (*pb.UserResponse, error)
+	LogIn(in *pb.LogInRequest) (*pb.LogInResponse, error)
 }

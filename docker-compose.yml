@@ -4,7 +4,7 @@ services:
   migrate:
     image: "migrate/migrate"
     networks:
-      - crm-admin-net
+      - CRMNet
     volumes:
       - ./migrations:/migrations
     command: ["-path", "/migrations", "-database", "postgres://postgres:123321@postgres-crm-auth:5432/crm_admin_auth?sslmode=disable", "up"]
@@ -20,7 +20,7 @@ services:
       - POSTGRES_PASSWORD=123321
       - POSTGRES_DB=crm_admin_auth
     networks:
-      - crm-admin-net
+      - CRMNet
     ports:
       - 5435:5432
     volumes:
@@ -38,13 +38,13 @@ services:
       postgres-crm-auth:
         condition: service_healthy
     networks:
-      - crm-admin-net
+      - CRMNet
     ports:
       - "9090:9090"
 
 networks:
-  crm-admin-net:
-    name: crm-admin-net
+  CRMNet:
+    name: CRMNet
     driver: bridge
 
 volumes:

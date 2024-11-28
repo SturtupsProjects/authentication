@@ -44,17 +44,34 @@ func (u *UserRepo) CreateUser(in *pb.UserRequest) (*pb.UserResponse, error) {
 }
 
 func (u *UserRepo) GetUser(in *pb.UserIDRequest) (*pb.UserResponse, error) {
-	var user pb.UserResponse
+	var user User
 	query := `SELECT user_id, first_name, last_name, email, phone_number, role, created_at FROM users WHERE user_id = $1`
 	err := u.db.Get(&user, query, in.Id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
-	return &user, nil
+	return &pb.UserResponse{UserId: user.UserID,
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		Email:       user.Email,
+		PhoneNumber: user.PhoneNumber,
+		Role:        user.Role,
+		CreatedAt:   user.CreatedAt,
+	}, nil
+}
+
+type User struct {
+	UserID      string `db:"user_id"`
+	FirstName   string `db:"first_name"`
+	LastName    string `db:"last_name"`
+	Email       string `db:"email"`
+	PhoneNumber string `db:"phone_number"`
+	Role        string `db:"role"`
+	CreatedAt   string `db:"created_at"`
 }
 
 func (u *UserRepo) GetListUser(in *pb.FilterUserRequest) (*pb.UserListResponse, error) {
-	var users []*pb.UserResponse
+	var users []User
 	var queryBuilder strings.Builder
 	var args []interface{}
 	argCounter := 1
@@ -87,7 +104,21 @@ func (u *UserRepo) GetListUser(in *pb.FilterUserRequest) (*pb.UserListResponse, 
 		return nil, fmt.Errorf("failed to list users: %w", err)
 	}
 
-	return &pb.UserListResponse{Users: users}, nil
+	// Convert to pb.UserResponse
+	var pbUsers []*pb.UserResponse
+	for _, user := range users {
+		pbUsers = append(pbUsers, &pb.UserResponse{
+			UserId:      user.UserID,
+			FirstName:   user.FirstName,
+			LastName:    user.LastName,
+			Email:       user.Email,
+			PhoneNumber: user.PhoneNumber,
+			Role:        user.Role,
+			CreatedAt:   user.CreatedAt,
+		})
+	}
+
+	return &pb.UserListResponse{Users: pbUsers}, nil
 }
 
 func (u *UserRepo) DeleteUser(in *pb.UserIDRequest) (*pb.MessageResponse, error) {
@@ -175,11 +206,15 @@ func (u *UserRepo) UpdateUser(in *pb.UserRequest) (*pb.UserResponse, error) {
 
 	return &user, nil
 }
-
 func (u *UserRepo) LogIn(in *pb.LogInRequest) (*pb.LogInResponse, error) {
 	var loginResp pb.LogInResponse
 	query := `SELECT user_id, first_name, phone_number, role FROM users WHERE phone_number = $1`
-	err := u.db.Get(&loginResp, query, in.PhoneNumber)
+	err := u.db.QueryRowx(query, in.PhoneNumber).Scan(
+		&loginResp.UserId,
+		&loginResp.FirstName,
+		&loginResp.PhoneNumber,
+		&loginResp.Role,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("login failed: %w", err)
 	}

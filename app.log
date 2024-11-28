@@ -1,0 +1,28 @@
+{"time":"2024-11-28T20:14:19.911828395+05:00","level":"INFO","msg":"LogIn called","phone_number":"string"}
+{"time":"2024-11-28T20:14:19.926547235+05:00","level":"ERROR","msg":"Login failed","phone_number":"string","error":"login failed: missing destination name user_id in *user.LogInResponse"}
+{"time":"2024-11-28T20:17:04.966690898+05:00","level":"INFO","msg":"AddUser called","email":"string@gmail.com"}
+{"time":"2024-11-28T20:17:06.491728+05:00","level":"INFO","msg":"User created successfully","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4"}
+{"time":"2024-11-28T20:18:13.367525267+05:00","level":"INFO","msg":"AddUser called","email":"string@gmail.com"}
+{"time":"2024-11-28T20:18:14.879913242+05:00","level":"ERROR","msg":"Failed to create user","error":"failed to create user: pq: duplicate key value violates unique constraint \"users_email_key\""}
+{"time":"2024-11-28T20:18:17.557418614+05:00","level":"INFO","msg":"LogIn called","phone_number":"string"}
+{"time":"2024-11-28T20:18:17.557805197+05:00","level":"ERROR","msg":"Login failed","phone_number":"string","error":"login failed: missing destination name user_id in *user.LogInResponse"}
+{"time":"2024-11-28T20:18:20.05374612+05:00","level":"INFO","msg":"LogIn called","phone_number":"string"}
+{"time":"2024-11-28T20:18:20.054265839+05:00","level":"ERROR","msg":"Login failed","phone_number":"string","error":"login failed: missing destination name user_id in *user.LogInResponse"}
+{"time":"2024-11-28T20:20:41.32059954+05:00","level":"INFO","msg":"LogIn called","phone_number":"string"}
+{"time":"2024-11-28T20:20:41.320901483+05:00","level":"ERROR","msg":"Login failed","phone_number":"string","error":"login failed: pq: got 4 parameters but the statement requires 0"}
+{"time":"2024-11-28T20:21:31.420982983+05:00","level":"INFO","msg":"LogIn called","phone_number":"string"}
+{"time":"2024-11-28T20:21:31.422074555+05:00","level":"INFO","msg":"Login successful","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4"}
+{"time":"2024-11-28T20:21:39.833613584+05:00","level":"INFO","msg":"GetUserList called","filters":{}}
+{"time":"2024-11-28T20:21:39.834330558+05:00","level":"ERROR","msg":"Failed to retrieve user list","error":"failed to list users: missing destination name user_id in *[]*user.UserResponse"}
+{"time":"2024-11-28T20:26:00.655664782+05:00","level":"INFO","msg":"GetUserList called","filters":{}}
+{"time":"2024-11-28T20:26:00.656694514+05:00","level":"INFO","msg":"User list retrieved successfully","count":1}
+{"time":"2024-11-28T20:26:38.52754253+05:00","level":"INFO","msg":"GetUser called","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4"}
+{"time":"2024-11-28T20:26:38.528069883+05:00","level":"ERROR","msg":"Failed to retrieve user","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4","error":"failed to get user: missing destination name user_id in *user.UserResponse"}
+{"time":"2024-11-28T20:27:45.247502744+05:00","level":"INFO","msg":"GetUser called","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4"}
+{"time":"2024-11-28T20:27:45.248404885+05:00","level":"ERROR","msg":"Failed to retrieve user","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4","error":"failed to get user: missing destination name user_id in *user.UserResponse"}
+{"time":"2024-11-28T20:29:03.164231701+05:00","level":"INFO","msg":"GetUser called","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4"}
+{"time":"2024-11-28T20:29:03.165285664+05:00","level":"INFO","msg":"User retrieved successfully","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4"}
+{"time":"2024-11-28T20:29:14.365400362+05:00","level":"INFO","msg":"UpdateUser called","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4"}
+{"time":"2024-11-28T20:29:14.371454843+05:00","level":"INFO","msg":"User updated successfully","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4"}
+{"time":"2024-11-28T20:29:23.409569908+05:00","level":"INFO","msg":"DeleteUser called","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4"}
+{"time":"2024-11-28T20:29:23.41552729+05:00","level":"INFO","msg":"User deleted successfully","message":"Deleted 1 user(s)"}

@@ -130,12 +130,16 @@ func (s *AuthServiceServer) DeleteUser(ctx context.Context, req *pb.UserIDReques
 func (s *AuthServiceServer) LogIn(ctx context.Context, req *pb.LogInRequest) (*pb.TokenResponse, error) {
 	s.log.Info("LogIn called", "phone_number", req.PhoneNumber)
 
-	loginResp, err := s.repo.LogIn(req)
+	loginResp, pass, err := s.repo.LogIn(req)
 	if err != nil {
 		s.log.Error("Login failed", "phone_number", req.PhoneNumber, "error", err)
 		return nil, fmt.Errorf("login failed: %w", err)
 	}
-
+	ok := help.CheckPasswordHash(req.Password, pass)
+	if ok == false {
+		s.log.Error("Login failed", "phone_number", req.PhoneNumber, "error", err)
+		return nil, fmt.Errorf("login failed: %s", "Invalid password")
+	}
 	// Simulate token generation (Replace with real token generation)
 	accessToken, err := token.GenerateAccessToken(loginResp)
 	if err != nil {

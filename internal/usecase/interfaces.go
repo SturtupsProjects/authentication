@@ -9,5 +9,5 @@ type UsersRepo interface {
 	GetListUser(in *pb.FilterUserRequest) (*pb.UserListResponse, error)
 	DeleteUser(in *pb.UserIDRequest) (*pb.MessageResponse, error)
 	UpdateUser(in *pb.UserRequest) (*pb.UserResponse, error)
-	LogIn(in *pb.LogInRequest) (*pb.LogInResponse, error)
+	LogIn(in *pb.LogInRequest) (*pb.LogInResponse, string, error)
 }

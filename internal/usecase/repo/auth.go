@@ -206,17 +206,19 @@ func (u *UserRepo) UpdateUser(in *pb.UserRequest) (*pb.UserResponse, error) {
 
 	return &user, nil
 }
-func (u *UserRepo) LogIn(in *pb.LogInRequest) (*pb.LogInResponse, error) {
+func (u *UserRepo) LogIn(in *pb.LogInRequest) (*pb.LogInResponse, string, error) {
 	var loginResp pb.LogInResponse
-	query := `SELECT user_id, first_name, phone_number, role FROM users WHERE phone_number = $1`
+	var password string
+	query := `SELECT user_id, first_name, phone_number, role, password FROM users WHERE phone_number = $1`
 	err := u.db.QueryRowx(query, in.PhoneNumber).Scan(
 		&loginResp.UserId,
 		&loginResp.FirstName,
 		&loginResp.PhoneNumber,
 		&loginResp.Role,
+		&password,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("login failed: %w", err)
+		return nil, "", fmt.Errorf("login failed: %w", err)
 	}
-	return &loginResp, nil
+	return &loginResp, password, nil
 }

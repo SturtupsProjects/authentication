@@ -10,4 +10,9 @@ type UsersRepo interface {
 	DeleteUser(in *pb.UserIDRequest) (*pb.MessageResponse, error)
 	UpdateUser(in *pb.UserRequest) (*pb.UserResponse, error)
 	LogIn(in *pb.LogInRequest) (*pb.LogInResponse, string, error)
+	CreateClient(in *pb.ClientRequest) (*pb.ClientResponse, error)
+	GetClient(in *pb.UserIDRequest) (*pb.ClientResponse, error)
+	GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResponse, error)
+	UpdateClient(in *pb.ClientUpdateRequest) (*pb.ClientResponse, error)
+	DeleteClient(in *pb.UserIDRequest) (*pb.MessageResponse, error)
 }

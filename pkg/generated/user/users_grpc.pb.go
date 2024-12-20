@@ -29,6 +29,11 @@ type AuthServiceClient interface {
 	GetUserList(ctx context.Context, in *FilterUserRequest, opts ...grpc.CallOption) (*UserListResponse, error)
 	DeleteUser(ctx context.Context, in *UserIDRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	LogIn(ctx context.Context, in *LogInRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	CreateClient(ctx context.Context, in *ClientRequest, opts ...grpc.CallOption) (*ClientResponse, error)
+	GetClient(ctx context.Context, in *UserIDRequest, opts ...grpc.CallOption) (*ClientResponse, error)
+	GetListClient(ctx context.Context, in *FilterClientRequest, opts ...grpc.CallOption) (*ClientListResponse, error)
+	UpdateClient(ctx context.Context, in *ClientUpdateRequest, opts ...grpc.CallOption) (*ClientResponse, error)
+	DeleteClient(ctx context.Context, in *UserIDRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 }
 
 type authServiceClient struct {
@@ -102,6 +107,51 @@ func (c *authServiceClient) LogIn(ctx context.Context, in *LogInRequest, opts ..
 	return out, nil
 }
 
+func (c *authServiceClient) CreateClient(ctx context.Context, in *ClientRequest, opts ...grpc.CallOption) (*ClientResponse, error) {
+	out := new(ClientResponse)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/CreateClient", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) GetClient(ctx context.Context, in *UserIDRequest, opts ...grpc.CallOption) (*ClientResponse, error) {
+	out := new(ClientResponse)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/GetClient", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) GetListClient(ctx context.Context, in *FilterClientRequest, opts ...grpc.CallOption) (*ClientListResponse, error) {
+	out := new(ClientListResponse)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/GetListClient", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) UpdateClient(ctx context.Context, in *ClientUpdateRequest, opts ...grpc.CallOption) (*ClientResponse, error) {
+	out := new(ClientResponse)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/UpdateClient", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) DeleteClient(ctx context.Context, in *UserIDRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
+	out := new(MessageResponse)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/DeleteClient", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
@@ -113,6 +163,11 @@ type AuthServiceServer interface {
 	GetUserList(context.Context, *FilterUserRequest) (*UserListResponse, error)
 	DeleteUser(context.Context, *UserIDRequest) (*MessageResponse, error)
 	LogIn(context.Context, *LogInRequest) (*TokenResponse, error)
+	CreateClient(context.Context, *ClientRequest) (*ClientResponse, error)
+	GetClient(context.Context, *UserIDRequest) (*ClientResponse, error)
+	GetListClient(context.Context, *FilterClientRequest) (*ClientListResponse, error)
+	UpdateClient(context.Context, *ClientUpdateRequest) (*ClientResponse, error)
+	DeleteClient(context.Context, *UserIDRequest) (*MessageResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -140,6 +195,21 @@ func (UnimplementedAuthServiceServer) DeleteUser(context.Context, *UserIDRequest
 }
 func (UnimplementedAuthServiceServer) LogIn(context.Context, *LogInRequest) (*TokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LogIn not implemented")
+}
+func (UnimplementedAuthServiceServer) CreateClient(context.Context, *ClientRequest) (*ClientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateClient not implemented")
+}
+func (UnimplementedAuthServiceServer) GetClient(context.Context, *UserIDRequest) (*ClientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetClient not implemented")
+}
+func (UnimplementedAuthServiceServer) GetListClient(context.Context, *FilterClientRequest) (*ClientListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetListClient not implemented")
+}
+func (UnimplementedAuthServiceServer) UpdateClient(context.Context, *ClientUpdateRequest) (*ClientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateClient not implemented")
+}
+func (UnimplementedAuthServiceServer) DeleteClient(context.Context, *UserIDRequest) (*MessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteClient not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
@@ -280,6 +350,96 @@ func _AuthService_LogIn_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_CreateClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).CreateClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.AuthService/CreateClient",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).CreateClient(ctx, req.(*ClientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_GetClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.AuthService/GetClient",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetClient(ctx, req.(*UserIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_GetListClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FilterClientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetListClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.AuthService/GetListClient",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetListClient(ctx, req.(*FilterClientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_UpdateClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClientUpdateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).UpdateClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.AuthService/UpdateClient",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).UpdateClient(ctx, req.(*ClientUpdateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_DeleteClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).DeleteClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.AuthService/DeleteClient",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).DeleteClient(ctx, req.(*UserIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -314,6 +474,26 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LogIn",
 			Handler:    _AuthService_LogIn_Handler,
+		},
+		{
+			MethodName: "CreateClient",
+			Handler:    _AuthService_CreateClient_Handler,
+		},
+		{
+			MethodName: "GetClient",
+			Handler:    _AuthService_GetClient_Handler,
+		},
+		{
+			MethodName: "GetListClient",
+			Handler:    _AuthService_GetListClient_Handler,
+		},
+		{
+			MethodName: "UpdateClient",
+			Handler:    _AuthService_UpdateClient_Handler,
+		},
+		{
+			MethodName: "DeleteClient",
+			Handler:    _AuthService_DeleteClient_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

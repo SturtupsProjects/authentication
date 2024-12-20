@@ -11,4 +11,11 @@ CREATE TABLE users
     created_at   TIMESTAMP DEFAULT NOW()
 );
 
-
+CREATE TABLE clients
+(
+    id         UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
+    full_name  VARCHAR(60) NOT NULL,
+    address    VARCHAR(50),
+    phone      VARCHAR(13),
+    created_at TIMESTAMP DEFAULT NOW()
+);

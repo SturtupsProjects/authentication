@@ -26,3 +26,41 @@
 {"time":"2024-11-28T20:29:14.371454843+05:00","level":"INFO","msg":"User updated successfully","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4"}
 {"time":"2024-11-28T20:29:23.409569908+05:00","level":"INFO","msg":"DeleteUser called","user_id":"ea1b7d8c-d5ca-4c0a-a2a0-5ca6208be5d4"}
 {"time":"2024-11-28T20:29:23.41552729+05:00","level":"INFO","msg":"User deleted successfully","message":"Deleted 1 user(s)"}
+{"time":"2024-12-23T22:07:04.911584179+05:00","level":"INFO","msg":"AddUser called","email":"string"}
+{"time":"2024-12-23T22:07:09.097054563+05:00","level":"INFO","msg":"User created successfully","user_id":"0de29a55-4c1e-4142-8def-2c6c6565020b"}
+{"time":"2024-12-23T22:07:16.266005206+05:00","level":"INFO","msg":"LogIn called","phone_number":"string"}
+{"time":"2024-12-23T22:07:20.33326165+05:00","level":"INFO","msg":"Login successful","user_id":"0de29a55-4c1e-4142-8def-2c6c6565020b"}
+{"time":"2024-12-23T22:12:09.736617037+05:00","level":"INFO","msg":"AddUser called","email":"string1"}
+{"time":"2024-12-23T22:12:13.956909688+05:00","level":"INFO","msg":"User created successfully","user_id":"146a061b-7109-4475-9820-71cd25aaa1df"}
+{"time":"2024-12-23T22:12:25.872665207+05:00","level":"INFO","msg":"LogIn called","phone_number":"string1"}
+{"time":"2024-12-23T22:12:29.900989627+05:00","level":"INFO","msg":"Login successful","user_id":"146a061b-7109-4475-9820-71cd25aaa1df"}
+{"time":"2024-12-23T22:12:51.267638535+05:00","level":"INFO","msg":"CreateCompany called","request":{"name":"string","website":"string","user_id":"146a061b-7109-4475-9820-71cd25aaa1df"}}
+{"time":"2024-12-23T22:12:51.271285285+05:00","level":"INFO","msg":"CreateCompany finished"}
+{"time":"2024-12-23T22:28:45.166204802+05:00","level":"INFO","msg":"LogIn called","phone_number":"string1"}
+{"time":"2024-12-23T22:28:49.172743234+05:00","level":"INFO","msg":"Login successful","user_id":"146a061b-7109-4475-9820-71cd25aaa1df"}
+{"time":"2024-12-23T22:29:05.197086685+05:00","level":"INFO","msg":"CreateCompany called","request":{"name":"string","website":"string","user_id":"146a061b-7109-4475-9820-71cd25aaa1df"}}
+{"time":"2024-12-23T22:29:05.200611266+05:00","level":"INFO","msg":"CreateCompany finished"}
+{"time":"2024-12-23T22:29:20.823991451+05:00","level":"INFO","msg":"ListCompanies called","pagination":{"limit":10}}
+{"time":"2024-12-23T22:29:20.825755494+05:00","level":"INFO","msg":"ListCompanies finished"}
+{"time":"2024-12-23T22:29:37.339380594+05:00","level":"INFO","msg":"GetCompany called","company_id":"fbd3bfaf-cf20-4efb-bb29-34c00dea9af2"}
+{"time":"2024-12-23T22:29:37.340243551+05:00","level":"INFO","msg":"GetCompany finished"}
+{"time":"2024-12-23T22:29:54.812872063+05:00","level":"INFO","msg":"UpdateCompany called","company_id":"fbd3bfaf-cf20-4efb-bb29-34c00dea9af2"}
+{"time":"2024-12-23T22:29:54.817110002+05:00","level":"INFO","msg":"UpdateCompany finished"}
+{"time":"2024-12-23T22:30:06.933025135+05:00","level":"INFO","msg":"ListCompanyUsers called","company_id":"fbd3bfaf-cf20-4efb-bb29-34c00dea9af2"}
+{"time":"2024-12-23T22:30:06.934372536+05:00","level":"INFO","msg":"ListCompanyUsers finished"}
+{"time":"2024-12-23T22:30:16.693679133+05:00","level":"INFO","msg":"CreateUserToCompany called","request":{"first_name":"string","last_name":"string","username":"string","email":"string","password":"string","phone_number":"string","company_id":"fbd3bfaf-cf20-4efb-bb29-34c00dea9af2","role":"user"}}
+{"time":"2024-12-23T22:30:20.923977107+05:00","level":"ERROR","msg":"Error creating user to company","error":"pq: duplicate key value violates unique constraint \"users_email_key\""}
+{"time":"2024-12-23T22:30:37.57036751+05:00","level":"INFO","msg":"CreateUserToCompany called","request":{"first_name":"string2","last_name":"string3","username":"string3","email":"string2","password":"string","phone_number":"string3","company_id":"fbd3bfaf-cf20-4efb-bb29-34c00dea9af2","role":"user"}}
+{"time":"2024-12-23T22:30:41.899909704+05:00","level":"INFO","msg":"CreateUserToCompany finished"}
+{"time":"2024-12-23T22:30:50.281556378+05:00","level":"INFO","msg":"ListCompanyUsers called","company_id":"fbd3bfaf-cf20-4efb-bb29-34c00dea9af2"}
+{"time":"2024-12-23T22:30:50.282445744+05:00","level":"INFO","msg":"ListCompanyUsers finished"}
+{"time":"2024-12-23T22:47:29.457830963+05:00","level":"INFO","msg":"GetUser called","user_id":"e5290a96-b6f0-4f25-9cfa-a9514eb2c8c0"}
+{"time":"2024-12-23T22:47:29.458851945+05:00","level":"INFO","msg":"User retrieved successfully","user_id":"e5290a96-b6f0-4f25-9cfa-a9514eb2c8c0"}
+{"time":"2024-12-23T22:47:46.53774822+05:00","level":"INFO","msg":"LogIn called","phone_number":"string3"}
+{"time":"2024-12-23T22:47:50.362005678+05:00","level":"ERROR","msg":"Login failed","phone_number":"string3","error":null}
+{"time":"2024-12-23T22:47:57.364424221+05:00","level":"INFO","msg":"LogIn called","phone_number":"string"}
+{"time":"2024-12-23T22:48:01.404710355+05:00","level":"ERROR","msg":"Login failed","phone_number":"string","error":null}
+{"time":"2024-12-23T22:48:05.480555951+05:00","level":"INFO","msg":"LogIn called","phone_number":"string2"}
+{"time":"2024-12-23T22:48:05.481397651+05:00","level":"ERROR","msg":"Login failed","phone_number":"string2","error":"login failed: sql: no rows in result set"}
+{"time":"2024-12-23T22:48:23.123483373+05:00","level":"INFO","msg":"LogIn called","phone_number":"string3"}
+{"time":"2024-12-23T22:48:27.109359472+05:00","level":"INFO","msg":"Login successful","user_id":"e5290a96-b6f0-4f25-9cfa-a9514eb2c8c0"}

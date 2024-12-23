@@ -6,3 +6,11 @@ type DBClient struct {
 	Address  string `db:"address"`
 	Phone    string `db:"phone"`
 }
+
+type LogInToken struct {
+	UserId      string `db:"user_id"`
+	Role        string `db:"role"`
+	FirstName   string `db:"first_name"`
+	PhoneNumber string `db:"phone_number"`
+	CompanyId   string `db:"company_id"`
+}

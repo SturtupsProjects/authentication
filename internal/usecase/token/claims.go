@@ -10,6 +10,7 @@ type Claims struct {
 	Id          string `json:"id"`
 	FirstName   string `json:"first_name"`
 	PhoneNumber string `json:"phone_number"`
+	CompanyId   string `json:"company_id"`
 	Role        string `json:"role"`
 	jwt.StandardClaims
 }

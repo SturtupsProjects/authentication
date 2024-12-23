@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	pb "authentification/pkg/generated/user"
+	pb "authentification/internal/generated/user"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -30,12 +30,33 @@ func (u *UserRepo) AddAdmin(response *pb.MessageResponse) (*pb.MessageResponse, 
 
 func (u *UserRepo) CreateUser(in *pb.UserRequest) (*pb.UserResponse, error) {
 	var user pb.UserResponse
+	tx, err := u.db.Beginx() // Use Beginx() for sqlx
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+
+	var companyID string
+	err = tx.QueryRowx("INSERT INTO company (name) VALUES ($1) RETURNING company_id", in.FirstName).Scan(&companyID)
+	if err != nil {
+		return nil, err
+	}
+
 	query := `
-		INSERT INTO users (first_name, last_name, email, phone_number, password, role)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO users (first_name, last_name, email, phone_number, password, role, company_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING user_id, first_name, last_name, email, phone_number, role, created_at
 	`
-	err := u.db.QueryRowx(query, in.FirstName, in.LastName, in.Email, in.PhoneNumber, in.Password, in.Role).
+	err = tx.QueryRowx(query, in.FirstName, in.LastName, in.Email, in.PhoneNumber, in.Password, in.Role, companyID).
 		Scan(&user.UserId, &user.FirstName, &user.LastName, &user.Email, &user.PhoneNumber, &user.Role, &user.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
@@ -45,7 +66,7 @@ func (u *UserRepo) CreateUser(in *pb.UserRequest) (*pb.UserResponse, error) {
 
 func (u *UserRepo) GetUser(in *pb.UserIDRequest) (*pb.UserResponse, error) {
 	var user User
-	query := `SELECT user_id, first_name, last_name, email, phone_number, role, created_at FROM users WHERE user_id = $1`
+	query := `SELECT user_id, first_name, last_name, email, phone_number, role, created_at, company_id FROM users WHERE user_id = $1`
 	err := u.db.Get(&user, query, in.Id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
@@ -57,6 +78,7 @@ func (u *UserRepo) GetUser(in *pb.UserIDRequest) (*pb.UserResponse, error) {
 		PhoneNumber: user.PhoneNumber,
 		Role:        user.Role,
 		CreatedAt:   user.CreatedAt,
+		CompanyId:   user.CompanyID,
 	}, nil
 }
 
@@ -68,6 +90,7 @@ type User struct {
 	PhoneNumber string `db:"phone_number"`
 	Role        string `db:"role"`
 	CreatedAt   string `db:"created_at"`
+	CompanyID   string `db:"company_id"`
 }
 
 func (u *UserRepo) GetListUser(in *pb.FilterUserRequest) (*pb.UserListResponse, error) {
@@ -76,7 +99,7 @@ func (u *UserRepo) GetListUser(in *pb.FilterUserRequest) (*pb.UserListResponse, 
 	var args []interface{}
 	argCounter := 1
 
-	queryBuilder.WriteString(`SELECT user_id, first_name, last_name, email, phone_number, role, created_at FROM users WHERE 1=1`)
+	queryBuilder.WriteString(`SELECT user_id, first_name, last_name, email, phone_number, role, created_at, company_id FROM users WHERE 1=1`)
 
 	if in.FirstName != "" {
 		queryBuilder.WriteString(fmt.Sprintf(" AND first_name ILIKE $%d", argCounter))
@@ -115,6 +138,7 @@ func (u *UserRepo) GetListUser(in *pb.FilterUserRequest) (*pb.UserListResponse, 
 			PhoneNumber: user.PhoneNumber,
 			Role:        user.Role,
 			CreatedAt:   user.CreatedAt,
+			CompanyId:   user.CompanyID,
 		})
 	}
 
@@ -180,12 +204,18 @@ func (u *UserRepo) UpdateUser(in *pb.UserRequest) (*pb.UserResponse, error) {
 		argIndex++
 	}
 
+	if in.CompanyId != "" {
+		queryBuilder.WriteString(fmt.Sprintf("company_id = $%d, ", argIndex))
+		args = append(args, in.CompanyId)
+		argIndex++
+	}
+
 	// Remove the trailing comma and space
 	query := queryBuilder.String()
 	query = strings.TrimSuffix(query, ", ")
 
 	// Add WHERE clause
-	query += fmt.Sprintf(" WHERE user_id = $%d RETURNING user_id, first_name, last_name, email, phone_number, role, created_at", argIndex)
+	query += fmt.Sprintf(" WHERE user_id = $%d RETURNING user_id, first_name, last_name, email, phone_number, role, created_at, company_id", argIndex)
 	args = append(args, in.UserId)
 
 	// Execute the query
@@ -198,6 +228,7 @@ func (u *UserRepo) UpdateUser(in *pb.UserRequest) (*pb.UserResponse, error) {
 		&user.PhoneNumber,
 		&user.Role,
 		&user.CreatedAt,
+		&user.CompanyId,
 	)
 
 	if err != nil {
@@ -206,19 +237,21 @@ func (u *UserRepo) UpdateUser(in *pb.UserRequest) (*pb.UserResponse, error) {
 
 	return &user, nil
 }
-func (u *UserRepo) LogIn(in *pb.LogInRequest) (*pb.LogInResponse, string, error) {
+func (u *UserRepo) LogIn(in *pb.LogInRequest) (*pb.LogInResponse, string, string, error) {
 	var loginResp pb.LogInResponse
 	var password string
-	query := `SELECT user_id, first_name, phone_number, role, password FROM users WHERE phone_number = $1`
+	var companyID string
+	query := `SELECT user_id, first_name, phone_number, role, password, company_id FROM users WHERE phone_number = $1`
 	err := u.db.QueryRowx(query, in.PhoneNumber).Scan(
 		&loginResp.UserId,
 		&loginResp.FirstName,
 		&loginResp.PhoneNumber,
 		&loginResp.Role,
 		&password,
+		&companyID,
 	)
 	if err != nil {
-		return nil, "", fmt.Errorf("login failed: %w", err)
+		return nil, "", "", fmt.Errorf("login failed: %w", err)
 	}
-	return &loginResp, password, nil
+	return &loginResp, password, companyID, nil
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	pb "authentification/pkg/generated/user"
+	pb "authentification/internal/generated/user"
 )
 
 // CreateClient handles new client creation

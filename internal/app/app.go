@@ -2,10 +2,11 @@ package app
 
 import (
 	"authentification/config"
+	pc "authentification/internal/generated/company"
+	pb "authentification/internal/generated/user"
 	"authentification/internal/usecase"
 	"authentification/internal/usecase/repo"
 	"authentification/internal/usecase/token"
-	pb "authentification/pkg/generated/user"
 	"authentification/pkg/logger"
 	"authentification/pkg/postgres"
 	"fmt"
@@ -27,9 +28,11 @@ func Run(cfg *config.Config) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	userst := repo.NewUserRepo(db)
+	userSt := repo.NewUserRepo(db)
+	companySt := repo.NewCompanyStorage(db)
 
-	authSr := usecase.NewAuthServiceServer(userst, logger1, cfg)
+	authSr := usecase.NewAuthServiceServer(userSt, logger1, cfg)
+	companySr := usecase.NewCompanyService(companySt, logger1)
 
 	listen, err := net.Listen("tcp", cfg.RUN_PORT)
 	fmt.Println("listening on port " + cfg.RUN_PORT)
@@ -40,7 +43,7 @@ func Run(cfg *config.Config) {
 
 	service := grpc.NewServer()
 	pb.RegisterAuthServiceServer(service, authSr)
-
+	pc.RegisterCompanyServiceServer(service, companySr)
 	if err := service.Serve(listen); err != nil {
 		logger1.Error("Error starting server")
 		log.Fatal(err)

@@ -2,14 +2,15 @@ package usecase
 
 import (
 	"authentification/config"
+	"authentification/internal/entity"
 	"authentification/internal/usecase/help"
 	"authentification/internal/usecase/token"
 	"context"
 	"fmt"
 	"log/slog"
 
+	pb "authentification/internal/generated/user"
 	"authentification/internal/usecase/repo"
-	pb "authentification/pkg/generated/user"
 )
 
 type AuthServiceServer struct {
@@ -130,7 +131,7 @@ func (s *AuthServiceServer) DeleteUser(ctx context.Context, req *pb.UserIDReques
 func (s *AuthServiceServer) LogIn(ctx context.Context, req *pb.LogInRequest) (*pb.TokenResponse, error) {
 	s.log.Info("LogIn called", "phone_number", req.PhoneNumber)
 
-	loginResp, pass, err := s.repo.LogIn(req)
+	loginResp, pass, CompanyId, err := s.repo.LogIn(req)
 	if err != nil {
 		s.log.Error("Login failed", "phone_number", req.PhoneNumber, "error", err)
 		return nil, fmt.Errorf("login failed: %w", err)
@@ -141,13 +142,13 @@ func (s *AuthServiceServer) LogIn(ctx context.Context, req *pb.LogInRequest) (*p
 		return nil, fmt.Errorf("login failed: %s", "Invalid password")
 	}
 	// Simulate token generation (Replace with real token generation)
-	accessToken, err := token.GenerateAccessToken(loginResp)
+	accessToken, err := token.GenerateAccessToken(&entity.LogInToken{UserId: loginResp.UserId, Role: loginResp.Role, FirstName: loginResp.FirstName, PhoneNumber: loginResp.PhoneNumber, CompanyId: CompanyId})
 	if err != nil {
 		s.log.Error("Error in generating access token", "error", err)
 		return nil, err
 	}
 
-	refreshToken, err := token.GenerateRefreshToken(loginResp)
+	refreshToken, err := token.GenerateRefreshToken(&entity.LogInToken{UserId: loginResp.UserId, Role: loginResp.Role, FirstName: loginResp.FirstName, PhoneNumber: loginResp.PhoneNumber, CompanyId: CompanyId})
 	if err != nil {
 		s.log.Error("Error in generating refresh token", "error", err)
 		return nil, err

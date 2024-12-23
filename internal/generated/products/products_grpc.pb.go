@@ -8,7 +8,6 @@ package products
 
 import (
 	context "context"
-	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -27,7 +26,7 @@ type ProductsClient interface {
 	CreateCategory(ctx context.Context, in *CreateCategoryRequest, opts ...grpc.CallOption) (*Category, error)
 	DeleteCategory(ctx context.Context, in *GetCategoryRequest, opts ...grpc.CallOption) (*Message, error)
 	GetCategory(ctx context.Context, in *GetCategoryRequest, opts ...grpc.CallOption) (*Category, error)
-	GetListCategory(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*CategoryList, error)
+	GetListCategory(ctx context.Context, in *CategoryName, opts ...grpc.CallOption) (*CategoryList, error)
 	// ------------- Products ---------------------------------------
 	CreateProduct(ctx context.Context, in *CreateProductRequest, opts ...grpc.CallOption) (*Product, error)
 	UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*Product, error)
@@ -84,7 +83,7 @@ func (c *productsClient) GetCategory(ctx context.Context, in *GetCategoryRequest
 	return out, nil
 }
 
-func (c *productsClient) GetListCategory(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*CategoryList, error) {
+func (c *productsClient) GetListCategory(ctx context.Context, in *CategoryName, opts ...grpc.CallOption) (*CategoryList, error) {
 	out := new(CategoryList)
 	err := c.cc.Invoke(ctx, "/products.Products/GetListCategory", in, out, opts...)
 	if err != nil {
@@ -245,7 +244,7 @@ type ProductsServer interface {
 	CreateCategory(context.Context, *CreateCategoryRequest) (*Category, error)
 	DeleteCategory(context.Context, *GetCategoryRequest) (*Message, error)
 	GetCategory(context.Context, *GetCategoryRequest) (*Category, error)
-	GetListCategory(context.Context, *empty.Empty) (*CategoryList, error)
+	GetListCategory(context.Context, *CategoryName) (*CategoryList, error)
 	// ------------- Products ---------------------------------------
 	CreateProduct(context.Context, *CreateProductRequest) (*Product, error)
 	UpdateProduct(context.Context, *UpdateProductRequest) (*Product, error)
@@ -281,7 +280,7 @@ func (UnimplementedProductsServer) DeleteCategory(context.Context, *GetCategoryR
 func (UnimplementedProductsServer) GetCategory(context.Context, *GetCategoryRequest) (*Category, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCategory not implemented")
 }
-func (UnimplementedProductsServer) GetListCategory(context.Context, *empty.Empty) (*CategoryList, error) {
+func (UnimplementedProductsServer) GetListCategory(context.Context, *CategoryName) (*CategoryList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetListCategory not implemented")
 }
 func (UnimplementedProductsServer) CreateProduct(context.Context, *CreateProductRequest) (*Product, error) {
@@ -400,7 +399,7 @@ func _Products_GetCategory_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 func _Products_GetListCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(empty.Empty)
+	in := new(CategoryName)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -412,7 +411,7 @@ func _Products_GetListCategory_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/products.Products/GetListCategory",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProductsServer).GetListCategory(ctx, req.(*empty.Empty))
+		return srv.(ProductsServer).GetListCategory(ctx, req.(*CategoryName))
 	}
 	return interceptor(ctx, in, info, handler)
 }

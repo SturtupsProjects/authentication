@@ -2,7 +2,7 @@ package repo
 
 import (
 	"authentification/internal/entity"
-	pb "authentification/pkg/generated/user"
+	pb "authentification/internal/generated/user"
 	"fmt"
 	"strconv"
 	"strings"

@@ -1,3 +1,11 @@
+CREATE TABLE company (
+                         company_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                         name VARCHAR(100) NOT NULL,
+                         website VARCHAR(100),
+                         logo VARCHAR(255),
+                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 -- Таблица пользователей
 CREATE TABLE users
 (
@@ -8,6 +16,7 @@ CREATE TABLE users
     phone_number VARCHAR(15) UNIQUE NOT NULL,
     password     VARCHAR             NOT NULL,
     role         VARCHAR(20)         NOT NULL,
+    company_id   UUID REFERENCES company (company_id),
     created_at   TIMESTAMP DEFAULT NOW()
 );
 
@@ -19,3 +28,4 @@ CREATE TABLE clients
     phone      VARCHAR(13),
     created_at TIMESTAMP DEFAULT NOW()
 );
+

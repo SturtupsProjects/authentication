@@ -5,6 +5,7 @@ type DBClient struct {
 	FullName string `db:"full_name"`
 	Address  string `db:"address"`
 	Phone    string `db:"phone"`
+	Type     string `db:"type"`
 }
 
 type LogInToken struct {

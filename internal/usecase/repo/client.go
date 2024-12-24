@@ -10,16 +10,17 @@ import (
 
 func (c *UserRepo) CreateClient(in *pb.ClientRequest) (*pb.ClientResponse, error) {
 	query := `
-		INSERT INTO clients (full_name, address, phone)
-		VALUES ($1, $2, $3)
-		RETURNING id, full_name, address, phone
+		INSERT INTO clients (full_name, address, phone, type)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, full_name, address, phone, type
 	`
 	var client pb.ClientResponse
-	err := c.db.QueryRowx(query, in.FullName, in.Address, in.Phone).Scan(
+	err := c.db.QueryRowx(query, in.FullName, in.Address, in.Phone, in.Type).Scan(
 		&client.Id,
 		&client.FullName,
 		&client.Address,
 		&client.Phone,
+		&client.Type,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client: %w", err)
@@ -29,7 +30,7 @@ func (c *UserRepo) CreateClient(in *pb.ClientRequest) (*pb.ClientResponse, error
 
 func (c *UserRepo) GetClient(in *pb.UserIDRequest) (*pb.ClientResponse, error) {
 	query := `
-		SELECT id, full_name, address, phone
+		SELECT id, full_name, address, phone, type
 		FROM clients
 		WHERE id = $1
 	`
@@ -39,6 +40,7 @@ func (c *UserRepo) GetClient(in *pb.UserIDRequest) (*pb.ClientResponse, error) {
 		&client.FullName,
 		&client.Address,
 		&client.Phone,
+		&client.Type,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve client: %w", err)
@@ -48,7 +50,7 @@ func (c *UserRepo) GetClient(in *pb.UserIDRequest) (*pb.ClientResponse, error) {
 
 func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResponse, error) {
 	query := `
-        SELECT id, full_name, address, phone
+        SELECT id, full_name, address, phone, type
         FROM clients
     `
 
@@ -70,6 +72,11 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 	if in.Phone != "" {
 		filters = append(filters, fmt.Sprintf("phone = $%d", argCounter))
 		args = append(args, in.Phone)
+		argCounter++
+	}
+	if in.Type != "" {
+		filters = append(filters, fmt.Sprintf("type = $%d", argCounter))
+		args = append(args, in.Type)
 		argCounter++
 	}
 
@@ -105,6 +112,7 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 			FullName: dbClient.FullName,
 			Address:  dbClient.Address,
 			Phone:    dbClient.Phone,
+			Type:     dbClient.Type,
 		})
 	}
 
@@ -134,13 +142,18 @@ func (c *UserRepo) UpdateClient(in *pb.ClientUpdateRequest) (*pb.ClientResponse,
 		args = append(args, in.Phone)
 		argIndex++
 	}
+	if in.Type != "" {
+		updates = append(updates, fmt.Sprintf("type = COALESCE(NULLIF($%d, ''), type)", argIndex))
+		args = append(args, in.Type)
+		argIndex++
+	}
 
 	// Ensure at least one field is being updated
 	if len(updates) == 0 {
 		return nil, fmt.Errorf("no fields to update")
 	}
 
-	query += strings.Join(updates, ", ") + " WHERE id = $" + strconv.Itoa(argIndex) + " RETURNING id, full_name, address, phone"
+	query += strings.Join(updates, ", ") + " WHERE id = $" + strconv.Itoa(argIndex) + " RETURNING id, full_name, address, phone, type"
 	args = append(args, in.Id)
 
 	// Execute the query
@@ -150,6 +163,7 @@ func (c *UserRepo) UpdateClient(in *pb.ClientUpdateRequest) (*pb.ClientResponse,
 		&client.FullName,
 		&client.Address,
 		&client.Phone,
+		&client.Type,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update client: %w", err)

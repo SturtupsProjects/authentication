@@ -10,6 +10,10 @@ DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS product_categories;
 DROP TABLE IF EXISTS clients;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS companies;
+DROP TABLE IF EXISTS clients;
+DROP TYPE IF EXISTS type;
+DROP TABLE IF EXISTS company;
 
 DROP TYPE IF EXISTS transaction_type;
 DROP TYPE IF EXISTS payment_method;

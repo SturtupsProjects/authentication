@@ -24,15 +24,15 @@ func NewAuthServiceServer(repo *repo.UserRepo, log *slog.Logger, conf *config.Co
 	return &AuthServiceServer{repo: repo, log: log, conf: conf}
 }
 
-// RegisterAdmin handles admin registration
 func (s *AuthServiceServer) RegisterAdmin(ctx context.Context, req *pb.MessageResponse) (*pb.MessageResponse, error) {
 	s.log.Info("RegisterAdmin called", "phone_number")
-	req.Message = s.conf.ADMIN_PASSWORD
+
 	pass, err := help.HashPassword(req.Message)
 	if err != nil {
 		s.log.Error("Failed to hash password", "error", err)
 		return nil, fmt.Errorf("could not hash password: %w", err)
 	}
+
 	req.Message = pass
 	resp, err := s.repo.AddAdmin(req)
 	if err != nil {
@@ -159,6 +159,7 @@ func (s *AuthServiceServer) LogIn(ctx context.Context, req *pb.LogInRequest) (*p
 	return &pb.TokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+		UserId:       loginResp.UserId,
 		ExpireAt:     int32(expireAt),
 	}, nil
 }

@@ -2,7 +2,6 @@ package repo
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	pb "authentification/internal/generated/user"

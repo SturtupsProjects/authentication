@@ -99,7 +99,7 @@ func (u *UserRepo) GetListUser(in *pb.FilterUserRequest) (*pb.UserListResponse, 
 	var args []interface{}
 	argCounter := 1
 
-	queryBuilder.WriteString(`SELECT user_id, first_name, last_name, email, phone_number, role, created_at, company_id FROM users WHERE company_id = IS NOT NULL `)
+	queryBuilder.WriteString(`SELECT user_id, first_name, last_name, email, phone_number, role, created_at, company_id FROM users WHERE company_id IS NOT NULL `)
 
 	if in.FirstName != "" {
 		queryBuilder.WriteString(fmt.Sprintf(" AND first_name ILIKE $%d", argCounter))

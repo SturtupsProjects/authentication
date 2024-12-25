@@ -46,8 +46,9 @@ networks:
   CRMNet:
     name: CRMNet
     driver: bridge
+    external: true
 
 volumes:
   postgres_data:
-    name: postgres_data
+    name: auth_postgres_data
   migrations:

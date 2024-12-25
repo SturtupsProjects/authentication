@@ -160,5 +160,6 @@ func (s *AuthServiceServer) LogIn(ctx context.Context, req *pb.LogInRequest) (*p
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		ExpireAt:     int32(expireAt),
+		UserId:       loginResp.UserId,
 	}, nil
 }

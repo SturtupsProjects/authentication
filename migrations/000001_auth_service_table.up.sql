@@ -28,6 +28,7 @@ CREATE TABLE clients
     type       type        NOT NULL,
     address    VARCHAR(50),
     phone      VARCHAR(13),
+    company_id UUID NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
 );
 

@@ -55,44 +55,52 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
         FROM clients
         WHERE company_id = $1
     `
-	filters := []string{}
 	args := []interface{}{in.CompanyId}
 	argCounter := 2
 
+	// Добавляем фильтры
 	if in.FullName != "" {
-		filters = append(filters, fmt.Sprintf("full_name ILIKE $%d", argCounter))
+		query += fmt.Sprintf(" AND full_name ILIKE $%d", argCounter)
 		args = append(args, "%"+in.FullName+"%")
 		argCounter++
 	}
 	if in.Address != "" {
-		filters = append(filters, fmt.Sprintf("address ILIKE $%d", argCounter))
+		query += fmt.Sprintf(" AND address ILIKE $%d", argCounter)
 		args = append(args, "%"+in.Address+"%")
 		argCounter++
 	}
 	if in.Phone != "" {
-		filters = append(filters, fmt.Sprintf("phone = $%d", argCounter))
+		query += fmt.Sprintf(" AND phone = $%d", argCounter)
 		args = append(args, in.Phone)
 		argCounter++
 	}
 	if in.Type != "" {
-		filters = append(filters, fmt.Sprintf("type = $%d", argCounter))
+		query += fmt.Sprintf(" AND type = $%d", argCounter)
 		args = append(args, in.Type)
 		argCounter++
 	}
 
-	if len(filters) > 0 {
-		query += " AND " + strings.Join(filters, " AND ")
+	// Устанавливаем сортировку и лимиты
+	query += " ORDER BY created_at"
+	if in.Limit == 0 {
+		in.Limit = 10 // Значение по умолчанию
 	}
+	if in.Page == 0 {
+		in.Page = 1 // Значение по умолчанию
+	}
+	offset := (in.Page - 1) * in.Limit
 
-	query += " ORDER BY created_at LIMIT $%d OFFSET $%d"
-	args = append(args, in.Limit, (in.Page-1)*in.Limit)
+	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argCounter, argCounter+1)
+	args = append(args, in.Limit, offset)
 
+	// Выполняем запрос
 	var dbClients []entity.DBClient
-	err := c.db.Select(&dbClients, fmt.Sprintf(query, argCounter, argCounter+1), args...)
+	err := c.db.Select(&dbClients, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve client list: %w", err)
 	}
 
+	// Преобразуем данные в pb.ClientResponse
 	var clients []*pb.ClientResponse
 	for _, dbClient := range dbClients {
 		clients = append(clients, &pb.ClientResponse{

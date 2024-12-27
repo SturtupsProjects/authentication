@@ -11,7 +11,7 @@ import (
 func (c *UserRepo) CreateClient(in *pb.ClientRequest) (*pb.ClientResponse, error) {
 	query := `
 		INSERT INTO clients (full_name, address, phone, type, company_id)
-		VALUES ($1, $2, $3, $4)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, full_name, address, phone, type, company_id
 	`
 	var client pb.ClientResponse
@@ -33,10 +33,10 @@ func (c *UserRepo) GetClient(in *pb.UserIDRequest) (*pb.ClientResponse, error) {
 	query := `
 		SELECT id, full_name, address, phone, type
 		FROM clients
-		WHERE id = $1 and company_id = $2
+		WHERE id = $1 AND company_id = $2
 	`
 	var client pb.ClientResponse
-	err := c.db.QueryRowx(query, in.Id).Scan(
+	err := c.db.QueryRowx(query, in.Id, in.CompanyId).Scan(
 		&client.Id,
 		&client.FullName,
 		&client.Address,
@@ -55,9 +55,8 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
         FROM clients
         WHERE company_id = $1
     `
-	// Initialize filters
 	filters := []string{}
-	args := []interface{}{in.CompanyId} // First argument is always company_id
+	args := []interface{}{in.CompanyId}
 	argCounter := 2
 
 	if in.FullName != "" {
@@ -81,33 +80,19 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 		argCounter++
 	}
 
-	// Add filters to the query if any
 	if len(filters) > 0 {
 		query += " AND " + strings.Join(filters, " AND ")
 	}
 
-	query += " ORDER BY created_at"
+	query += " ORDER BY created_at LIMIT $%d OFFSET $%d"
+	args = append(args, in.Limit, (in.Page-1)*in.Limit)
 
-	// Pagination
-	if in.Limit == 0 {
-		in.Limit = 10
-	}
-	if in.Page == 0 {
-		in.Page = 1
-	}
-	offset := (in.Page - 1) * in.Limit
-
-	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argCounter, argCounter+1)
-	args = append(args, in.Limit, offset)
-
-	// Execute query
 	var dbClients []entity.DBClient
-	err := c.db.Select(&dbClients, query, args...)
+	err := c.db.Select(&dbClients, fmt.Sprintf(query, argCounter, argCounter+1), args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve client list: %w", err)
 	}
 
-	// Convert DBClient structs to pb.ClientResponse
 	var clients []*pb.ClientResponse
 	for _, dbClient := range dbClients {
 		clients = append(clients, &pb.ClientResponse{
@@ -181,12 +166,13 @@ func (c *UserRepo) DeleteClient(in *pb.UserIDRequest) (*pb.MessageResponse, erro
 	query := `
 		DELETE FROM clients
 		WHERE id = $1 AND company_id = $2
-		RETURNING 'Client deleted'
+		RETURNING id, full_name
 	`
-	var message pb.MessageResponse
-	err := c.db.QueryRowx(query, in.Id, in.CompanyId).Scan(&message.Message)
+	var id string
+	var fullName string
+	err := c.db.QueryRowx(query, in.Id, in.CompanyId).Scan(&id, &fullName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete client: %w", err)
 	}
-	return &message, nil
+	return &pb.MessageResponse{Message: fmt.Sprintf("Client %s (ID: %s) deleted", fullName, id)}, nil
 }

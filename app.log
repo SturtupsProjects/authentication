@@ -64,3 +64,11 @@
 {"time":"2024-12-23T22:48:05.481397651+05:00","level":"ERROR","msg":"Login failed","phone_number":"string2","error":"login failed: sql: no rows in result set"}
 {"time":"2024-12-23T22:48:23.123483373+05:00","level":"INFO","msg":"LogIn called","phone_number":"string3"}
 {"time":"2024-12-23T22:48:27.109359472+05:00","level":"INFO","msg":"Login successful","user_id":"e5290a96-b6f0-4f25-9cfa-a9514eb2c8c0"}
+{"time":"2025-01-06T18:54:50.715027335+05:00","level":"INFO","msg":"CreateClient called","full_name":"kimdur"}
+{"time":"2025-01-06T18:54:50.727359159+05:00","level":"INFO","msg":"Client created successfully","client_id":"ab195c5f-f6c0-4cde-8b7e-037583b91f15"}
+{"time":"2025-01-06T18:57:04.00865472+05:00","level":"INFO","msg":"GetClientList called","filters":{"client_type":"client","company_id":"cdb8a9c6-00d2-444e-9ab5-e4cb66a8c6d4"}}
+{"time":"2025-01-06T18:57:04.015275459+05:00","level":"INFO","msg":"Client list retrieved successfully","count":0}
+{"time":"2025-01-06T18:57:56.078807526+05:00","level":"INFO","msg":"GetClientList called","filters":{"client_type":"street","company_id":"cdb8a9c6-00d2-444e-9ab5-e4cb66a8c6d4"}}
+{"time":"2025-01-06T18:57:56.080685473+05:00","level":"INFO","msg":"Client list retrieved successfully","count":1}
+{"time":"2025-01-06T18:58:06.185820389+05:00","level":"INFO","msg":"GetClientList called","filters":{"client_type":"client","company_id":"cdb8a9c6-00d2-444e-9ab5-e4cb66a8c6d4"}}
+{"time":"2025-01-06T18:58:06.186775508+05:00","level":"INFO","msg":"Client list retrieved successfully","count":0}

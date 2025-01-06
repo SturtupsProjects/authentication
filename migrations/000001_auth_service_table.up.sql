@@ -20,15 +20,19 @@ CREATE TABLE users
     company_id   UUID REFERENCES company (company_id),
     created_at   TIMESTAMP DEFAULT NOW()
 );
+
 create type type as enum ('client', 'suplier');
+create type type_client as enum ('street', 'client');
+
 CREATE TABLE clients
 (
-    id         UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
-    full_name  VARCHAR(60) NOT NULL,
-    type       type        NOT NULL,
-    address    VARCHAR(50),
-    phone      VARCHAR(13),
-    company_id UUID NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW()
+    id          UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
+    full_name   VARCHAR(60) NOT NULL,
+    type        type        NOT NULL,
+    client_type type_client NOT NULL,
+    address     VARCHAR(50),
+    phone       VARCHAR(13),
+    company_id  UUID        NOT NULL,
+    created_at  TIMESTAMP DEFAULT NOW()
 );
 

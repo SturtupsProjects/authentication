@@ -81,7 +81,7 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 	}
 
 	// Устанавливаем сортировку и лимиты
-	query += " ORDER BY created_at"
+	query += " ORDER BY created_at DESC"
 	if in.Limit == 0 {
 		in.Limit = 10 // Значение по умолчанию
 	}

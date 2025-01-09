@@ -18,9 +18,9 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 
 func (u *UserRepo) AddAdmin(response *pb.MessageResponse) (*pb.MessageResponse, error) {
 	_, err := u.db.Exec(
-		`INSERT INTO users(first_name, last_name, email, phone_number, password, role)
-		VALUES ($1, $2, $3, $4, $5, $6)`,
-		"admin", "admin", "admin@admin.com", "admin", response.Message, "admin",
+		`INSERT INTO users(first_name, last_name, email, phone_number, password, role, company_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+		"admin", "admin", "admin@admin.com", "admin", response.Message, "admin", "6ae1416f-f8c7-45e5-9e12-7af620970772",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add admin: %w", err)

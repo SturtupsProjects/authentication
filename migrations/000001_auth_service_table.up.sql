@@ -7,7 +7,10 @@ CREATE TABLE company
     created_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP
 );
+
 -- Таблица пользователей
+create type role as enum ('admin', 'owner', 'worker');
+
 CREATE TABLE users
 (
     user_id      UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -16,7 +19,7 @@ CREATE TABLE users
     email        VARCHAR(100) UNIQUE,
     phone_number VARCHAR(15) UNIQUE NOT NULL,
     password     VARCHAR            NOT NULL,
-    role         VARCHAR(20)        NOT NULL,
+    role         role               NOT NULL,
     company_id   UUID REFERENCES company (company_id),
     created_at   TIMESTAMP DEFAULT NOW()
 );

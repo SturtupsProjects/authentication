@@ -7,6 +7,17 @@ CREATE TABLE company
     created_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE branches (
+                          branch_id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                          name        VARCHAR(100) NOT NULL,
+                          address     VARCHAR(255),
+                          phone       VARCHAR(15),
+                          company_id  UUID NOT NULL REFERENCES company (company_id) ON DELETE CASCADE,
+                          created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          deleted_at  bigint default 0
+);
+
 -- Таблица пользователей
 CREATE TABLE users
 (
@@ -18,6 +29,7 @@ CREATE TABLE users
     password     VARCHAR            NOT NULL,
     role         VARCHAR(20)        NOT NULL,
     company_id   UUID REFERENCES company (company_id),
+    branch_id    UUID REFERENCES branches (branch_id), -- New column for branch association
     created_at   TIMESTAMP DEFAULT NOW()
 );
 create type type as enum ('client', 'suplier');

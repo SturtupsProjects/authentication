@@ -28,3 +28,10 @@ type CompanyRepo interface {
 	ListCompanyUsers(req *company.ListCompanyUsersRequest) (*company.ListCompanyUsersResponse, error)
 	CreateUserToCompany(req *company.CreateUserToCompanyRequest) (*company.Id, error)
 }
+type BranchRepo interface {
+	CreateBranch(req *company.CreateBranchRequest) (*company.BranchResponse, error)
+	GetBranch(req *company.GetBranchRequest) (*company.BranchResponse, error)
+	UpdateBranch(req *company.UpdateBranchRequest) (*company.BranchResponse, error)
+	DeleteBranch(req *company.DeleteBranchRequest) (*company.Message, error)
+	ListBranches(req *company.ListBranchesRequest) (*company.ListBranchesResponse, error)
+}

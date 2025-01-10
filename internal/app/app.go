@@ -30,9 +30,10 @@ func Run(cfg *config.Config) {
 	}
 	userSt := repo.NewUserRepo(db)
 	companySt := repo.NewCompanyStorage(db)
+	branchSt := repo.NewBranchRepo(db)
 
 	authSr := usecase.NewAuthServiceServer(userSt, logger1, cfg)
-	companySr := usecase.NewCompanyService(companySt, logger1)
+	companySr := usecase.NewCompanyService(companySt, branchSt, logger1)
 
 	listen, err := net.Listen("tcp", cfg.RUN_PORT)
 	fmt.Println("listening on port " + cfg.RUN_PORT)

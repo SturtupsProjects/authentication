@@ -8,21 +8,23 @@ import (
 )
 
 type CompanyService struct {
-	repo CompanyRepo
-	log  *slog.Logger
+	repoC CompanyRepo
+	repoB BranchRepo
+	log   *slog.Logger
 	company.UnimplementedCompanyServiceServer
 }
 
-func NewCompanyService(repo CompanyRepo, log *slog.Logger) *CompanyService {
+func NewCompanyService(repoC CompanyRepo, repoB BranchRepo, log *slog.Logger) *CompanyService {
 	return &CompanyService{
-		repo: repo,
-		log:  log,
+		repoC: repoC,
+		repoB: repoB,
+		log:   log,
 	}
 }
 
 func (s *CompanyService) CreateCompany(ctx context.Context, req *company.CreateCompanyRequest) (*company.CompanyResponse, error) {
 	s.log.Info("CreateCompany called", "request", req)
-	result, err := s.repo.CreateCompany(req)
+	result, err := s.repoC.CreateCompany(req)
 	if err != nil {
 		s.log.Error("Error creating company", "error", err)
 		return nil, err
@@ -33,7 +35,7 @@ func (s *CompanyService) CreateCompany(ctx context.Context, req *company.CreateC
 
 func (s *CompanyService) GetCompany(ctx context.Context, req *company.GetCompanyRequest) (*company.CompanyResponse, error) {
 	s.log.Info("GetCompany called", "company_id", req.CompanyId)
-	result, err := s.repo.GetCompany(req)
+	result, err := s.repoC.GetCompany(req)
 	if err != nil {
 		s.log.Error("Error fetching company", "error", err)
 		return nil, err
@@ -44,7 +46,7 @@ func (s *CompanyService) GetCompany(ctx context.Context, req *company.GetCompany
 
 func (s *CompanyService) UpdateCompany(ctx context.Context, req *company.UpdateCompanyRequest) (*company.CompanyResponse, error) {
 	s.log.Info("UpdateCompany called", "company_id", req.CompanyId)
-	result, err := s.repo.UpdateCompany(req)
+	result, err := s.repoC.UpdateCompany(req)
 	if err != nil {
 		s.log.Error("Error updating company", "error", err)
 		return nil, err
@@ -55,7 +57,7 @@ func (s *CompanyService) UpdateCompany(ctx context.Context, req *company.UpdateC
 
 func (s *CompanyService) DeleteCompany(ctx context.Context, req *company.DeleteCompanyRequest) (*company.Message, error) {
 	s.log.Info("DeleteCompany called", "company_id", req.CompanyId)
-	result, err := s.repo.DeleteCompany(req)
+	result, err := s.repoC.DeleteCompany(req)
 	if err != nil {
 		s.log.Error("Error deleting company", "error", err)
 		return nil, err
@@ -66,7 +68,7 @@ func (s *CompanyService) DeleteCompany(ctx context.Context, req *company.DeleteC
 
 func (s *CompanyService) ListCompanies(ctx context.Context, req *company.ListCompaniesRequest) (*company.ListCompaniesResponse, error) {
 	s.log.Info("ListCompanies called", "pagination", req)
-	result, err := s.repo.ListCompanies(req)
+	result, err := s.repoC.ListCompanies(req)
 	if err != nil {
 		s.log.Error("Error listing companies", "error", err)
 		return nil, err
@@ -77,7 +79,7 @@ func (s *CompanyService) ListCompanies(ctx context.Context, req *company.ListCom
 
 func (s *CompanyService) ListCompanyUsers(ctx context.Context, req *company.ListCompanyUsersRequest) (*company.ListCompanyUsersResponse, error) {
 	s.log.Info("ListCompanyUsers called", "company_id", req.CompanyId)
-	result, err := s.repo.ListCompanyUsers(req)
+	result, err := s.repoC.ListCompanyUsers(req)
 	if err != nil {
 		s.log.Error("Error listing company users", "error", err)
 		return nil, err
@@ -95,7 +97,7 @@ func (s *CompanyService) CreateUserToCompany(ctx context.Context, req *company.C
 	}
 
 	req.Password = hashedPassword
-	result, err := s.repo.CreateUserToCompany(req)
+	result, err := s.repoC.CreateUserToCompany(req)
 	if err != nil {
 		s.log.Error("Error creating user to company", "error", err)
 		return nil, err

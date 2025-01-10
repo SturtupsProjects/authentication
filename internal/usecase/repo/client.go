@@ -10,12 +10,12 @@ import (
 
 func (c *UserRepo) CreateClient(in *pb.ClientRequest) (*pb.ClientResponse, error) {
 	query := `
-		INSERT INTO clients (full_name, address, phone, type, company_id)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO clients (full_name, address, phone, type, client_type, company_id)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, full_name, address, phone, type, company_id
 	`
 	var client pb.ClientResponse
-	err := c.db.QueryRowx(query, in.FullName, in.Address, in.Phone, in.Type, in.CompanyId).Scan(
+	err := c.db.QueryRowx(query, in.FullName, in.Address, in.Phone, in.Type, in.ClientType, in.CompanyId).Scan(
 		&client.Id,
 		&client.FullName,
 		&client.Address,
@@ -53,10 +53,10 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 	query := `
         SELECT id, full_name, address, phone, type, company_id
         FROM clients
-        WHERE company_id = $1
+        WHERE company_id = $1 and client_type = $2
     `
-	args := []interface{}{in.CompanyId}
-	argCounter := 2
+	args := []interface{}{in.CompanyId, in.ClientType}
+	argCounter := 3
 
 	// Добавляем фильтры
 	if in.FullName != "" {
@@ -81,7 +81,7 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 	}
 
 	// Устанавливаем сортировку и лимиты
-	query += " ORDER BY created_at"
+	query += " ORDER BY created_at DESC"
 	if in.Limit == 0 {
 		in.Limit = 10 // Значение по умолчанию
 	}

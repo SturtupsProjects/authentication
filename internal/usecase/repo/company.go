@@ -162,11 +162,14 @@ func (r *CompanyRepo) ListCompanyUsers(in *company.ListCompanyUsersRequest) (*co
 
 	return &company.ListCompanyUsersResponse{Users: users}, nil
 }
+
 func (r *CompanyRepo) CreateUserToCompany(in *company.CreateUserToCompanyRequest) (*company.Id, error) {
 	tx, err := r.db.Beginx()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
+
+	// Ensure proper rollback and commit logic with deferred function
 	defer func() {
 		if p := recover(); p != nil {
 			tx.Rollback()
@@ -178,29 +181,27 @@ func (r *CompanyRepo) CreateUserToCompany(in *company.CreateUserToCompanyRequest
 		}
 	}()
 
+	// Check if the company exists
 	var companyID string
 	err = tx.QueryRow(`SELECT company_id FROM company WHERE company_id = $1`, in.CompanyId).Scan(&companyID)
 	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("company not found")
 		}
+		return nil, fmt.Errorf("failed to check company existence: %w", err)
 	}
 
-	if companyID == "" {
-		err = tx.QueryRow(`INSERT INTO company (name, company_id) VALUES ($1, $2) RETURNING company_id`,
-			in.FirstName, in.CompanyId).Scan(&companyID)
-		if err != nil {
-			return nil, err
-		}
-	}
-
+	// Insert user into the database
 	var userID string
-	err = tx.QueryRow(`INSERT INTO users (first_name, last_name, email,phone_number, password, role, company_id) 
+	err = tx.QueryRow(
+		`INSERT INTO users (first_name, last_name, email, phone_number, password, role, company_id) 
 		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING user_id`,
-		in.FirstName, in.LastName, in.Email, in.PhoneNumber, in.Password, in.Role, companyID).Scan(&userID)
+		in.FirstName, in.LastName, in.Email, in.PhoneNumber, in.Password, in.Role, companyID,
+	).Scan(&userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to insert user: %w", err)
 	}
 
+	// Return created user ID
 	return &company.Id{Id: userID}, nil
 }

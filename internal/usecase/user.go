@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 
 	pb "authentification/internal/generated/user"
 	"authentification/internal/usecase/repo"
@@ -26,6 +27,8 @@ func NewAuthServiceServer(repo *repo.UserRepo, log *slog.Logger, conf *config.Co
 
 func (s *AuthServiceServer) RegisterAdmin(ctx context.Context, req *pb.MessageResponse) (*pb.MessageResponse, error) {
 	s.log.Info("RegisterAdmin called", "phone_number")
+
+	req.Message = os.Getenv("ADMIN_PASSWORD")
 
 	pass, err := help.HashPassword(req.Message)
 	if err != nil {

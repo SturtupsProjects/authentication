@@ -72,3 +72,61 @@
 {"time":"2025-01-06T18:57:56.080685473+05:00","level":"INFO","msg":"Client list retrieved successfully","count":1}
 {"time":"2025-01-06T18:58:06.185820389+05:00","level":"INFO","msg":"GetClientList called","filters":{"client_type":"client","company_id":"cdb8a9c6-00d2-444e-9ab5-e4cb66a8c6d4"}}
 {"time":"2025-01-06T18:58:06.186775508+05:00","level":"INFO","msg":"Client list retrieved successfully","count":0}
+{"time":"2025-01-11T14:11:19.846326201+05:00","level":"INFO","msg":"RegisterAdmin called","!BADKEY":"phone_number"}
+{"time":"2025-01-11T14:11:24.063597008+05:00","level":"ERROR","msg":"Failed to register admin","error":"failed to add admin: pq: inconsistent types deduced for parameter $6"}
+{"time":"2025-01-11T14:12:16.121742875+05:00","level":"INFO","msg":"RegisterAdmin called","!BADKEY":"phone_number"}
+{"time":"2025-01-11T14:12:20.165125684+05:00","level":"ERROR","msg":"Failed to register admin","error":"failed to add admin: pq: insert or update on table \"users\" violates foreign key constraint \"users_company_id_fkey\""}
+{"time":"2025-01-11T14:14:26.31143634+05:00","level":"INFO","msg":"RegisterAdmin called","!BADKEY":"phone_number"}
+{"time":"2025-01-11T14:14:30.373368122+05:00","level":"ERROR","msg":"Failed to register admin","error":"failed to create user: pq: insert or update on table \"users\" violates foreign key constraint \"users_company_id_fkey\""}
+{"time":"2025-01-11T14:17:58.457476682+05:00","level":"INFO","msg":"RegisterAdmin called","!BADKEY":"phone_number"}
+{"time":"2025-01-11T14:18:02.800828795+05:00","level":"INFO","msg":"Admin registered successfully","message":"Admin added successfully"}
+{"time":"2025-01-11T14:18:32.331000038+05:00","level":"INFO","msg":"LogIn called","phone_number":"admin"}
+{"time":"2025-01-11T14:18:36.974341345+05:00","level":"ERROR","msg":"Login failed","phone_number":"admin","error":null}
+{"time":"2025-01-11T14:20:19.36435947+05:00","level":"INFO","msg":"LogIn called","phone_number":"admin"}
+{"time":"2025-01-11T14:20:23.949802497+05:00","level":"ERROR","msg":"Login failed","phone_number":"admin","error":null}
+{"time":"2025-01-11T14:21:34.058015506+05:00","level":"INFO","msg":"RegisterAdmin called","!BADKEY":"phone_number"}
+{"time":"2025-01-11T14:21:39.126212353+05:00","level":"ERROR","msg":"Failed to register admin","error":"failed to create user: pq: duplicate key value violates unique constraint \"users_email_key\""}
+{"time":"2025-01-11T14:24:25.496623738+05:00","level":"INFO","msg":"RegisterAdmin called","!BADKEY":"phone_number"}
+{"time":"2025-01-11T14:24:29.910239304+05:00","level":"INFO","msg":"Admin registered successfully","message":"Admin added successfully"}
+{"time":"2025-01-11T14:24:38.467328784+05:00","level":"INFO","msg":"LogIn called","phone_number":"admin"}
+{"time":"2025-01-11T14:24:43.222263958+05:00","level":"INFO","msg":"Login successful","user_id":"a0bf5093-fbae-439e-9a78-775ef06c0f5b"}
+{"time":"2025-01-11T14:25:04.145656768+05:00","level":"INFO","msg":"CreateBranch called","request":{"name":"string","address":"string","phone_number":"string","company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515"}}
+{"time":"2025-01-11T14:25:04.146652895+05:00","level":"ERROR","msg":"Error creating branch","error":"failed to create branch: pq: column \"phone_number\" of relation \"branches\" does not exist"}
+{"time":"2025-01-11T14:25:50.684796808+05:00","level":"INFO","msg":"CreateBranch called","request":{"name":"string","address":"string","phone_number":"string","company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515"}}
+{"time":"2025-01-11T14:25:50.685372624+05:00","level":"ERROR","msg":"Error creating branch","error":"failed to create branch: pq: column \"phone_number\" of relation \"branches\" does not exist"}
+{"time":"2025-01-11T14:26:14.026732859+05:00","level":"INFO","msg":"CreateBranch called","request":{"name":"string","address":"string","phone_number":"string","company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515"}}
+{"time":"2025-01-11T14:26:14.027889176+05:00","level":"ERROR","msg":"Error creating branch","error":"failed to create branch: pq: column \"phone_number\" does not exist"}
+{"time":"2025-01-11T14:26:40.703536841+05:00","level":"INFO","msg":"CreateBranch called","request":{"name":"string","address":"string","phone_number":"string","company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515"}}
+{"time":"2025-01-11T14:26:40.708334559+05:00","level":"INFO","msg":"CreateBranch finished"}
+{"time":"2025-01-11T14:27:49.071779685+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","page":1}}
+{"time":"2025-01-11T14:27:49.072566872+05:00","level":"ERROR","msg":"Error listing branches","error":"failed to list branches: pq: column \"phone_number\" does not exist"}
+{"time":"2025-01-11T14:28:51.707952456+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","page":1}}
+{"time":"2025-01-11T14:28:51.710774143+05:00","level":"ERROR","msg":"Error listing branches","error":"failed to list branches: missing destination name branch_id in *[]*company.BranchResponse"}
+{"time":"2025-01-11T14:28:57.593710155+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
+{"time":"2025-01-11T14:28:57.594805958+05:00","level":"ERROR","msg":"Error listing branches","error":"failed to list branches: missing destination name branch_id in *[]*company.BranchResponse"}
+{"time":"2025-01-11T14:31:07.282132225+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
+{"time":"2025-01-11T14:31:07.284845324+05:00","level":"ERROR","msg":"Error listing branches","error":"failed to execute query: pq: column \"phone_number\" does not exist"}
+{"time":"2025-01-11T14:31:15.784697174+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
+{"time":"2025-01-11T14:31:15.785463948+05:00","level":"ERROR","msg":"Error listing branches","error":"failed to execute query: pq: column \"phone_number\" does not exist"}
+{"time":"2025-01-11T14:31:25.286447492+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
+{"time":"2025-01-11T14:31:25.289163464+05:00","level":"INFO","msg":"ListBranches finished"}
+{"time":"2025-01-11T14:31:33.206989832+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10}}
+{"time":"2025-01-11T14:31:33.207882079+05:00","level":"ERROR","msg":"Error listing branches","error":"failed to execute query: pq: OFFSET must not be negative"}
+{"time":"2025-01-11T14:31:45.666267333+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
+{"time":"2025-01-11T14:31:45.666939645+05:00","level":"INFO","msg":"ListBranches finished"}
+{"time":"2025-01-11T14:32:04.532674204+05:00","level":"INFO","msg":"GetBranch called","branch_id":"0de7c9b6-8b4b-4ab4-a05a-e9ca10a7c57d"}
+{"time":"2025-01-11T14:32:04.533284186+05:00","level":"INFO","msg":"GetBranch finished"}
+{"time":"2025-01-11T14:32:26.474583953+05:00","level":"INFO","msg":"UpdateBranch called","branch_id":"0de7c9b6-8b4b-4ab4-a05a-e9ca10a7c57d"}
+{"time":"2025-01-11T14:32:26.478727757+05:00","level":"INFO","msg":"UpdateBranch finished"}
+{"time":"2025-01-11T14:32:33.008212817+05:00","level":"INFO","msg":"GetBranch called","branch_id":"0de7c9b6-8b4b-4ab4-a05a-e9ca10a7c57d"}
+{"time":"2025-01-11T14:32:33.008992463+05:00","level":"INFO","msg":"GetBranch finished"}
+{"time":"2025-01-11T14:32:41.411330718+05:00","level":"INFO","msg":"DeleteBranch called","branch_id":"0de7c9b6-8b4b-4ab4-a05a-e9ca10a7c57d"}
+{"time":"2025-01-11T14:32:41.411773934+05:00","level":"ERROR","msg":"Error deleting branch","error":"failed to delete branch: pq: column \"deleted_at\" is of type bigint but expression is of type timestamp with time zone"}
+{"time":"2025-01-11T14:35:14.940762157+05:00","level":"INFO","msg":"DeleteBranch called","branch_id":"0de7c9b6-8b4b-4ab4-a05a-e9ca10a7c57d"}
+{"time":"2025-01-11T14:35:14.941440748+05:00","level":"ERROR","msg":"Error deleting branch","error":"failed to delete branch: pq: column \"deleted_at\" is of type bigint but expression is of type timestamp with time zone"}
+{"time":"2025-01-11T14:35:47.411466475+05:00","level":"INFO","msg":"DeleteBranch called","branch_id":"0de7c9b6-8b4b-4ab4-a05a-e9ca10a7c57d"}
+{"time":"2025-01-11T14:35:47.420247115+05:00","level":"INFO","msg":"DeleteBranch finished"}
+{"time":"2025-01-11T14:38:22.4016085+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
+{"time":"2025-01-11T14:38:22.40287449+05:00","level":"INFO","msg":"ListBranches finished"}
+{"time":"2025-01-11T14:40:05.981354543+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
+{"time":"2025-01-11T14:40:05.983970621+05:00","level":"INFO","msg":"ListBranches finished"}

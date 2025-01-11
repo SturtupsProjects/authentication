@@ -130,3 +130,13 @@
 {"time":"2025-01-11T14:38:22.40287449+05:00","level":"INFO","msg":"ListBranches finished"}
 {"time":"2025-01-11T14:40:05.981354543+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
 {"time":"2025-01-11T14:40:05.983970621+05:00","level":"INFO","msg":"ListBranches finished"}
+{"time":"2025-01-11T22:35:14.844876216+05:00","level":"INFO","msg":"LogIn called","phone_number":"admin"}
+{"time":"2025-01-11T22:35:19.61611656+05:00","level":"INFO","msg":"Login successful","user_id":"a0bf5093-fbae-439e-9a78-775ef06c0f5b"}
+{"time":"2025-01-11T22:36:07.533338615+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
+{"time":"2025-01-11T22:36:07.542971784+05:00","level":"INFO","msg":"ListBranches finished"}
+{"time":"2025-01-11T22:36:15.954154222+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
+{"time":"2025-01-11T22:36:15.955068717+05:00","level":"INFO","msg":"ListBranches finished"}
+{"time":"2025-01-11T22:36:25.623492309+05:00","level":"INFO","msg":"CreateBranch called","request":{"name":"string","address":"string","phone_number":"string","company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515"}}
+{"time":"2025-01-11T22:36:25.629815047+05:00","level":"INFO","msg":"CreateBranch finished"}
+{"time":"2025-01-11T22:36:30.507511933+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
+{"time":"2025-01-11T22:36:30.508537304+05:00","level":"INFO","msg":"ListBranches finished"}

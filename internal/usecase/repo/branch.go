@@ -102,8 +102,9 @@ func (r *BranchRepo) DeleteBranch(in *company.DeleteBranchRequest) (*company.Mes
 }
 
 func (r *BranchRepo) ListBranches(in *company.ListBranchesRequest) (*company.ListBranchesResponse, error) {
-	query := `SELECT branch_id, company_id, name, address, phone, created_at, updated_at 
-              FROM branches 
+	query := `SELECT branch_id, company_id, name, address, phone, created_at, updated_at, 
+              COUNT(*) OVER() AS total_count
+			  FROM branches 
               WHERE company_id = $1 AND deleted_at = 0
               ORDER BY created_at DESC 
               LIMIT $2 OFFSET $3`
@@ -114,6 +115,7 @@ func (r *BranchRepo) ListBranches(in *company.ListBranchesRequest) (*company.Lis
 	}
 	defer rows.Close()
 
+	var count int64
 	var branches []*company.BranchResponse
 	for rows.Next() {
 		var branch company.BranchResponse
@@ -125,6 +127,7 @@ func (r *BranchRepo) ListBranches(in *company.ListBranchesRequest) (*company.Lis
 			&branch.PhoneNumber,
 			&branch.CreatedAt,
 			&branch.UpdatedAt,
+			&count,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
@@ -136,5 +139,5 @@ func (r *BranchRepo) ListBranches(in *company.ListBranchesRequest) (*company.Lis
 		return nil, fmt.Errorf("rows iteration error: %w", err)
 	}
 
-	return &company.ListBranchesResponse{Branches: branches}, nil
+	return &company.ListBranchesResponse{Branches: branches, TotalCount: count}, nil
 }

@@ -137,7 +137,8 @@ func (r *CompanyRepo) ListCompanyUsers(in *company.ListCompanyUsersRequest) (*co
 	query := `SELECT user_id, CONCAT(first_name, ' ', last_name) AS name, role 
               FROM users 
               WHERE company_id = $1 
-              AND COALESCE(first_name, '') ILIKE '%' || $2 || '%' OR COALESCE(last_name, '') ILIKE '%' || $2 || '%' 
+              AND ($2 = '' OR (COALESCE(first_name, '') ILIKE '%' || $2 || '%' 
+              OR COALESCE(last_name, '') ILIKE '%' || $2 || '%')) 
               LIMIT $3 OFFSET $4`
 
 	offset := (in.Page - 1) * in.Limit

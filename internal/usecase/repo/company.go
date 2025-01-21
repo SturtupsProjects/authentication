@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -134,20 +135,45 @@ func (r *CompanyRepo) ListCompanies(in *company.ListCompaniesRequest) (*company.
 }
 
 func (r *CompanyRepo) ListCompanyUsers(in *company.ListCompanyUsersRequest) (*company.ListCompanyUsersResponse, error) {
-	query := `SELECT user_id, CONCAT(first_name, ' ', last_name) AS name, role 
-              FROM users 
-              WHERE company_id = $1 
-              AND ($2 = '' OR (COALESCE(first_name, '') ILIKE '%' || $2 || '%' 
-              OR COALESCE(last_name, '') ILIKE '%' || $2 || '%')) 
-              LIMIT $3 OFFSET $4`
+	// Начальные параметры фильтрации
+	var filters []string
+	var args []interface{}
 
-	offset := (in.Page - 1) * in.Limit
-	rows, err := r.db.Query(query, in.CompanyId, in.Name, in.Limit, offset)
+	// Фильтр по company_id (обязательный)
+	filters = append(filters, "company_id = $1")
+	args = append(args, in.CompanyId)
+
+	// Фильтр по имени (необязательный)
+	if in.Name != "" {
+		filters = append(filters, fmt.Sprintf("COALESCE(first_name, '') || ' ' || COALESCE(last_name, '') ILIKE '%%' || $%d || '%%'", len(args)+1))
+		args = append(args, in.Name)
+	}
+
+	// Построение основного запроса
+	mainQuery := fmt.Sprintf(`
+		SELECT 
+			user_id, 
+			COALESCE(first_name, '') || ' ' || COALESCE(last_name, '') AS name, 
+			role
+		FROM users
+		WHERE %s
+		ORDER BY name ASC`, strings.Join(filters, " AND "))
+
+	// Добавляем лимит и смещение, если они заданы
+	if in.Limit > 0 && in.Page > 0 {
+		offset := (in.Page - 1) * in.Limit
+		mainQuery += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)+1, len(args)+2)
+		args = append(args, in.Limit, offset)
+	}
+
+	// Выполнение основного запроса
+	rows, err := r.db.Query(mainQuery, args...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to query company users: %w", err)
 	}
 	defer rows.Close()
 
+	// Формирование списка пользователей
 	users := make([]*company.UserResponse, 0)
 	for rows.Next() {
 		var u company.UserResponse
@@ -157,12 +183,19 @@ func (r *CompanyRepo) ListCompanyUsers(in *company.ListCompanyUsersRequest) (*co
 			&u.Role,
 		)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to scan user row: %w", err)
 		}
 		users = append(users, &u)
 	}
 
-	return &company.ListCompanyUsersResponse{Users: users}, nil
+	// Проверка на ошибки итерации
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over user rows: %w", err)
+	}
+
+	return &company.ListCompanyUsersResponse{
+		Users: users,
+	}, nil
 }
 
 func (r *CompanyRepo) CreateUserToCompany(in *company.CreateUserToCompanyRequest) (*company.Id, error) {

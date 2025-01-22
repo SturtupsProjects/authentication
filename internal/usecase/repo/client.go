@@ -4,6 +4,7 @@ import (
 	"authentification/internal/entity"
 	pb "authentification/internal/generated/user"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"strconv"
 	"strings"
 )
@@ -50,70 +51,90 @@ func (c *UserRepo) GetClient(in *pb.UserIDRequest) (*pb.ClientResponse, error) {
 }
 
 func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResponse, error) {
-	query := `
-        SELECT id, full_name, address, phone, type, company_id
+	// Базовый запрос
+	baseQuery := `
         FROM clients
-        WHERE company_id = $1 and client_type = $2
+        WHERE company_id = $1 AND client_type = $2
     `
 	args := []interface{}{in.CompanyId, in.ClientType}
 	argCounter := 3
 
 	// Добавляем фильтры
 	if in.FullName != "" {
-		query += fmt.Sprintf(" AND full_name ILIKE $%d", argCounter)
+		filter := fmt.Sprintf(" AND full_name ILIKE $%d", argCounter)
+		baseQuery += filter
 		args = append(args, "%"+in.FullName+"%")
 		argCounter++
 	}
 	if in.Address != "" {
-		query += fmt.Sprintf(" AND address ILIKE $%d", argCounter)
+		filter := fmt.Sprintf(" AND address ILIKE $%d", argCounter)
+		baseQuery += filter
 		args = append(args, "%"+in.Address+"%")
 		argCounter++
 	}
 	if in.Phone != "" {
-		query += fmt.Sprintf(" AND phone = $%d", argCounter)
+		filter := fmt.Sprintf(" AND phone = $%d", argCounter)
+		baseQuery += filter
 		args = append(args, in.Phone)
 		argCounter++
 	}
 	if in.Type != "" {
-		query += fmt.Sprintf(" AND type = $%d", argCounter)
+		filter := fmt.Sprintf(" AND type = $%d", argCounter)
+		baseQuery += filter
 		args = append(args, in.Type)
 		argCounter++
 	}
 
-	// Устанавливаем сортировку и лимиты
-	query += " ORDER BY created_at DESC"
-	if in.Limit == 0 {
-		in.Limit = 10 // Значение по умолчанию
+	// Запрос для данных с пагинацией
+	dataQuery := "SELECT id, full_name, address, phone, type, company_id " + baseQuery
+	if in.Limit > 0 && in.Page > 0 {
+		offset := (in.Page - 1) * in.Limit
+		dataQuery += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argCounter, argCounter+1)
+		args = append(args, in.Limit, offset)
 	}
-	if in.Page == 0 {
-		in.Page = 1 // Значение по умолчанию
-	}
-	offset := (in.Page - 1) * in.Limit
 
-	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argCounter, argCounter+1)
-	args = append(args, in.Limit, offset)
+	// Запрос для total_count
+	countQuery := "SELECT COUNT(*) " + baseQuery
 
-	// Выполняем запрос
+	// Выполнение обоих запросов в одной транзакции для оптимизации
+	var totalCount int
 	var dbClients []entity.DBClient
-	err := c.db.Select(&dbClients, query, args...)
+
+	err := c.db.Transact(func(tx *sqlx.Tx) error {
+		// Выполняем запрос для total_count
+		if err := tx.Get(&totalCount, countQuery, args...); err != nil {
+			return fmt.Errorf("failed to retrieve total count: %w", err)
+		}
+
+		// Выполняем запрос для данных
+		if err := tx.Select(&dbClients, dataQuery, args...); err != nil {
+			return fmt.Errorf("failed to retrieve client list: %w", err)
+		}
+
+		return nil
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve client list: %w", err)
+		return nil, err
 	}
 
-	// Преобразуем данные в pb.ClientResponse
-	var clients []*pb.ClientResponse
-	for _, dbClient := range dbClients {
-		clients = append(clients, &pb.ClientResponse{
+	// Преобразование результата
+	clients := make([]*pb.ClientResponse, len(dbClients))
+	for i, dbClient := range dbClients {
+		clients[i] = &pb.ClientResponse{
 			Id:        dbClient.Id,
 			FullName:  dbClient.FullName,
 			Address:   dbClient.Address,
 			Phone:     dbClient.Phone,
 			Type:      dbClient.Type,
 			CompanyId: dbClient.CompanyId,
-		})
+		}
 	}
 
-	return &pb.ClientListResponse{Clients: clients}, nil
+	// Возвращаем результат
+	return &pb.ClientListResponse{
+		Clients:    clients,
+		TotalCount: int64(totalCount),
+	}, nil
 }
 
 func (c *UserRepo) UpdateClient(in *pb.ClientUpdateRequest) (*pb.ClientResponse, error) {

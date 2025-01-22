@@ -139,12 +139,13 @@ func (s *AuthServiceServer) LogIn(ctx context.Context, req *pb.LogInRequest) (*p
 		s.log.Error("Login failed", "phone_number", req.PhoneNumber, "error", err)
 		return nil, fmt.Errorf("login failed: %w", err)
 	}
+
 	ok := help.CheckPasswordHash(req.Password, pass)
 	if ok == false {
 		s.log.Error("Login failed", "phone_number", req.PhoneNumber, "error", err)
 		return nil, fmt.Errorf("login failed: %s", "Invalid password")
 	}
-	// Simulate token generation (Replace with real token generation)
+
 	accessToken, err := token.GenerateAccessToken(&entity.LogInToken{UserId: loginResp.UserId, Role: loginResp.Role, FirstName: loginResp.FirstName, PhoneNumber: loginResp.PhoneNumber, CompanyId: CompanyId})
 	if err != nil {
 		s.log.Error("Error in generating access token", "error", err)

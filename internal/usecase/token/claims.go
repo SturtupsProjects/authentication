@@ -28,7 +28,7 @@ func ConfigToken(config *config.Config) error {
 	}
 
 	AccessSecretKey = config.ACCESS_TOKEN
-	RefreshSecretKey = config.ACCESS_TOKEN
+	RefreshSecretKey = config.REFRESH_TOKEN
 	ExpiredAccess = exAcc
 	ExpiredRefresh = refAcc
 

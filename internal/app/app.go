@@ -28,6 +28,7 @@ func Run(cfg *config.Config) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	userSt := repo.NewUserRepo(db)
 	companySt := repo.NewCompanyStorage(db)
 	branchSt := repo.NewBranchRepo(db)

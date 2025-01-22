@@ -27,7 +27,7 @@ func GenerateAccessToken(in *entity.LogInToken) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(os.Getenv(AccessSecretKey)))
+	return token.SignedString([]byte(AccessSecretKey))
 }
 
 func GenerateRefreshToken(in *entity.LogInToken) (string, error) {
@@ -43,7 +43,7 @@ func GenerateRefreshToken(in *entity.LogInToken) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(os.Getenv(RefreshSecretKey)))
+	return token.SignedString([]byte(RefreshSecretKey))
 }
 
 func ExtractAccessToken(tokenStr string) (*Claims, error) {

@@ -4,7 +4,6 @@ import (
 	"authentification/internal/entity"
 	pb "authentification/internal/generated/user"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"strconv"
 	"strings"
 )
@@ -61,29 +60,28 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 
 	// Добавляем фильтры
 	if in.FullName != "" {
-		filter := fmt.Sprintf(" AND full_name ILIKE $%d", argCounter)
-		baseQuery += filter
+		baseQuery += fmt.Sprintf(" AND full_name ILIKE $%d", argCounter)
 		args = append(args, "%"+in.FullName+"%")
 		argCounter++
 	}
 	if in.Address != "" {
-		filter := fmt.Sprintf(" AND address ILIKE $%d", argCounter)
-		baseQuery += filter
+		baseQuery += fmt.Sprintf(" AND address ILIKE $%d", argCounter)
 		args = append(args, "%"+in.Address+"%")
 		argCounter++
 	}
 	if in.Phone != "" {
-		filter := fmt.Sprintf(" AND phone = $%d", argCounter)
-		baseQuery += filter
+		baseQuery += fmt.Sprintf(" AND phone = $%d", argCounter)
 		args = append(args, in.Phone)
 		argCounter++
 	}
 	if in.Type != "" {
-		filter := fmt.Sprintf(" AND type = $%d", argCounter)
-		baseQuery += filter
+		baseQuery += fmt.Sprintf(" AND type = $%d", argCounter)
 		args = append(args, in.Type)
 		argCounter++
 	}
+
+	// Запрос для total_count
+	countQuery := "SELECT COUNT(*) " + baseQuery
 
 	// Запрос для данных с пагинацией
 	dataQuery := "SELECT id, full_name, address, phone, type, company_id " + baseQuery
@@ -93,28 +91,33 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 		args = append(args, in.Limit, offset)
 	}
 
-	// Запрос для total_count
-	countQuery := "SELECT COUNT(*) " + baseQuery
-
-	// Выполнение обоих запросов в одной транзакции для оптимизации
+	// Выполнение запросов
 	var totalCount int
 	var dbClients []entity.DBClient
 
-	err := c.db.Transact(func(tx *sqlx.Tx) error {
-		// Выполняем запрос для total_count
-		if err := tx.Get(&totalCount, countQuery, args...); err != nil {
-			return fmt.Errorf("failed to retrieve total count: %w", err)
-		}
-
-		// Выполняем запрос для данных
-		if err := tx.Select(&dbClients, dataQuery, args...); err != nil {
-			return fmt.Errorf("failed to retrieve client list: %w", err)
-		}
-
-		return nil
-	})
+	tx, err := c.db.Beginx()
 	if err != nil {
 		return nil, err
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	// Выполняем запрос для total_count
+	if err := tx.Get(&totalCount, countQuery, args...); err != nil {
+		return nil, fmt.Errorf("failed to retrieve total count: %w", err)
+	}
+
+	// Выполняем запрос для данных
+	if err := tx.Select(&dbClients, dataQuery, args...); err != nil {
+		return nil, fmt.Errorf("failed to retrieve client list: %w", err)
 	}
 
 	// Преобразование результата

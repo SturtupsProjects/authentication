@@ -80,7 +80,7 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 		argCounter++
 	}
 
-	// Запрос для total_count
+	// Запрос для total_count (без LIMIT и OFFSET)
 	countQuery := "SELECT COUNT(*) " + baseQuery
 
 	// Запрос для данных с пагинацией
@@ -111,7 +111,7 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 	}()
 
 	// Выполняем запрос для total_count
-	if err := tx.Get(&totalCount, countQuery, args...); err != nil {
+	if err := tx.Get(&totalCount, countQuery, args[:argCounter]...); err != nil { // Use only necessary arguments
 		return nil, fmt.Errorf("failed to retrieve total count: %w", err)
 	}
 

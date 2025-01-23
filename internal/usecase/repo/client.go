@@ -110,13 +110,8 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 		}
 	}()
 
-	// Проверяем длину args перед использованием
-	if len(args) < argCounter-1 {
-		return nil, fmt.Errorf("insufficient arguments for query")
-	}
-
 	// Выполняем запрос для total_count
-	if err := tx.Get(&totalCount, countQuery, args[:len(args)-2]...); err != nil { // Use appropriate slice
+	if err := tx.Get(&totalCount, countQuery, args...); err != nil { // Используем все аргументы
 		return nil, fmt.Errorf("failed to retrieve total count: %w", err)
 	}
 

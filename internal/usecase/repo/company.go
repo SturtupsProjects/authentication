@@ -193,8 +193,17 @@ func (r *CompanyRepo) ListCompanyUsers(in *company.ListCompanyUsersRequest) (*co
 		return nil, fmt.Errorf("error iterating over user rows: %w", err)
 	}
 
+	var totalCount int64
+	totalQuery := `SELECT COUNT(*) FROM users WHERE company_id = $1`
+
+	err = r.db.QueryRow(totalQuery, in.CompanyId).Scan(&totalCount)
+	if err != nil {
+		return nil, fmt.Errorf("failed to count company users: %w", err)
+	}
+
 	return &company.ListCompanyUsersResponse{
-		Users: users,
+		Users:      users,
+		TotalCount: totalCount,
 	}, nil
 }
 

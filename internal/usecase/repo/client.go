@@ -111,7 +111,8 @@ func (c *UserRepo) GetListClient(in *pb.FilterClientRequest) (*pb.ClientListResp
 	}()
 
 	// Выполняем запрос для total_count
-	if err := tx.Get(&totalCount, countQuery, args[:argCounter]...); err != nil { // Use only necessary arguments
+	// Make sure to pass only the arguments up to `argCounter` for the count query
+	if err := tx.Get(&totalCount, countQuery, args[:argCounter]...); err != nil { // Pass only the necessary filters
 		return nil, fmt.Errorf("failed to retrieve total count: %w", err)
 	}
 

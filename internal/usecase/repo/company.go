@@ -135,69 +135,60 @@ func (r *CompanyRepo) ListCompanies(in *company.ListCompaniesRequest) (*company.
 }
 
 func (r *CompanyRepo) ListCompanyUsers(in *company.ListCompanyUsersRequest) (*company.ListCompanyUsersResponse, error) {
-	// Начальные параметры фильтрации
+
 	var filters []string
 	var args []interface{}
 
-	// Фильтр по company_id (обязательный)
 	filters = append(filters, "company_id = $1")
 	args = append(args, in.CompanyId)
 
-	// Фильтр по имени (необязательный)
 	if in.Name != "" {
-		filters = append(filters, fmt.Sprintf("COALESCE(first_name, '') || ' ' || COALESCE(last_name, '') ILIKE '%%' || $%d || '%%'", len(args)+1))
-		args = append(args, in.Name)
+		filters = append(filters, fmt.Sprintf("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) ILIKE $%d", len(args)+1))
+		args = append(args, "%"+in.Name+"%")
 	}
 
-	// Построение основного запроса
-	mainQuery := fmt.Sprintf(`
+	baseQuery := fmt.Sprintf(`
 		SELECT 
 			user_id, 
-			COALESCE(first_name, '') || ' ' || COALESCE(last_name, '') AS name, 
+			CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) AS name, 
 			role
 		FROM users
-		WHERE %s
-		ORDER BY name ASC`, strings.Join(filters, " AND "))
+		WHERE %s`, strings.Join(filters, " AND "))
 
-	// Добавляем лимит и смещение, если они заданы
-	if in.Limit > 0 && in.Page > 0 {
+	baseQuery += " ORDER BY name ASC"
+
+	if in.Limit > 0 {
+		baseQuery += fmt.Sprintf(" LIMIT $%d", len(args)+1)
+		args = append(args, in.Limit)
+	}
+	if in.Page > 0 && in.Limit > 0 {
 		offset := (in.Page - 1) * in.Limit
-		mainQuery += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)+1, len(args)+2)
-		args = append(args, in.Limit, offset)
+		baseQuery += fmt.Sprintf(" OFFSET $%d", len(args)+1)
+		args = append(args, offset)
 	}
 
-	// Выполнение основного запроса
-	rows, err := r.db.Query(mainQuery, args...)
+	rows, err := r.db.Query(baseQuery, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query company users: %w", err)
 	}
 	defer rows.Close()
 
-	// Формирование списка пользователей
 	users := make([]*company.UserResponse, 0)
 	for rows.Next() {
-		var u company.UserResponse
-		err := rows.Scan(
-			&u.UserId,
-			&u.Name,
-			&u.Role,
-		)
-		if err != nil {
+		var user company.UserResponse
+		if err := rows.Scan(&user.UserId, &user.Name, &user.Role); err != nil {
 			return nil, fmt.Errorf("failed to scan user row: %w", err)
 		}
-		users = append(users, &u)
+		users = append(users, &user)
 	}
 
-	// Проверка на ошибки итерации
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating over user rows: %w", err)
 	}
 
 	var totalCount int64
-	totalQuery := `SELECT COUNT(*) FROM users WHERE company_id = $1`
-
-	err = r.db.QueryRow(totalQuery, in.CompanyId).Scan(&totalCount)
-	if err != nil {
+	totalQuery := fmt.Sprintf(`SELECT COUNT(*) FROM users WHERE %s`, strings.Join(filters, " AND "))
+	if err := r.db.QueryRow(totalQuery, args[:len(args)-2]...).Scan(&totalCount); err != nil {
 		return nil, fmt.Errorf("failed to count company users: %w", err)
 	}
 

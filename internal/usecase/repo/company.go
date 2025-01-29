@@ -240,3 +240,76 @@ func (r *CompanyRepo) CreateUserToCompany(in *company.CreateUserToCompanyRequest
 	// Return created user ID
 	return &company.Id{Id: userID}, nil
 }
+
+func (r *CompanyRepo) CreateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error) {
+	var result company.CompanyBalanceResponse
+	query := `INSERT INTO company_balance (company_id, amount) 
+              VALUES ($1, $2) 
+              RETURNING company_id, amount`
+	err := r.db.QueryRow(query, req.CompanyId, req.Balance).Scan(&result.CompanyId, &result.Balance)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create balance: %w", err)
+	}
+	return &result, nil
+}
+
+func (r *CompanyRepo) GetBalance(req *company.Id) (*company.CompanyBalanceResponse, error) {
+	var result company.CompanyBalanceResponse
+	query := `SELECT company_id, amount FROM company_balance WHERE company_id = $1`
+	err := r.db.QueryRow(query, req.Id).Scan(&result.CompanyId, &result.Balance)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("balance not found")
+		}
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (r *CompanyRepo) UpdateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error) {
+	var result company.CompanyBalanceResponse
+	query := `UPDATE company_balance SET amount = $1 WHERE company_id = $2 RETURNING company_id, amount`
+	err := r.db.QueryRow(query, req.Balance, req.CompanyId).Scan(&result.CompanyId, &result.Balance)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update balance: %w", err)
+	}
+	return &result, nil
+}
+
+func (r *CompanyRepo) DeleteBalance(req *company.Id) (*company.Message, error) {
+	query := `UPDATE company_balance SET deleted_at = EXTRACT(EPOCH FROM NOW()) WHERE company_id = $1`
+	result, err := r.db.Exec(query, req.Id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete balance: %w", err)
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return nil, fmt.Errorf("balance not found or already deleted")
+	}
+
+	return &company.Message{Message: "Balance deleted successfully"}, nil
+}
+
+func (r *CompanyRepo) ListBalances(req *company.FilterCompanyBalanceRequest) (*company.CompanyBalanceListResponse, error) {
+	var balances []*company.CompanyBalanceResponse
+	query := `SELECT company_id, amount FROM company_balance ORDER BY created_at DESC LIMIT $2 OFFSET $3`
+	rows, err := r.db.Query(query, req.Limit, (req.Page-1)*req.Limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list balances: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var balance company.CompanyBalanceResponse
+		if err := rows.Scan(&balance.CompanyId, &balance.Balance); err != nil {
+			return nil, fmt.Errorf("failed to scan balance row: %w", err)
+		}
+		balances = append(balances, &balance)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over balance rows: %w", err)
+	}
+
+	return &company.CompanyBalanceListResponse{Users: balances}, nil
+}

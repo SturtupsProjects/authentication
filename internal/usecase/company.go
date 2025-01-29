@@ -8,9 +8,10 @@ import (
 )
 
 type CompanyService struct {
-	repoC CompanyRepo
-	repoB BranchRepo
-	log   *slog.Logger
+	repoC  CompanyRepo
+	repoCB CompanyBalanceRepo
+	repoB  BranchRepo
+	log    *slog.Logger
 	company.UnimplementedCompanyServiceServer
 }
 
@@ -103,5 +104,60 @@ func (s *CompanyService) CreateUserToCompany(ctx context.Context, req *company.C
 		return nil, err
 	}
 	s.log.Info("CreateUserToCompany finished")
+	return result, nil
+}
+
+func (s *CompanyService) CreateCompanyBalance(ctx context.Context, req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error) {
+	s.log.Info("CreateCompanyBalance called", "request", req)
+	result, err := s.repoCB.CreateBalance(req)
+	if err != nil {
+		s.log.Error("Error creating company balance", "error", err)
+		return nil, err
+	}
+	s.log.Info("CreateCompanyBalance finished")
+	return result, nil
+}
+func (s *CompanyService) GetCompanyBalance(ctx context.Context, req *company.Id) (*company.CompanyBalanceResponse, error) {
+	s.log.Info("GetCompanyBalance called", "company_id", req.Id)
+	result, err := s.repoCB.GetBalance(req)
+	if err != nil {
+		s.log.Error("Error fetching company balance", "error", err)
+		return nil, err
+	}
+	s.log.Info("GetCompanyBalance finished")
+	return result, nil
+
+}
+
+func (s *CompanyService) UpdateCompanyBalance(ctx context.Context, req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error) {
+	s.log.Info("UpdateCompanyBalance called", "company_id", req.CompanyId)
+	result, err := s.repoCB.UpdateBalance(req)
+	if err != nil {
+		s.log.Error("Error updating company balance", "error", err)
+		return nil, err
+	}
+	s.log.Info("UpdateCompanyBalance finished")
+	return result, nil
+}
+
+func (s *CompanyService) GetUsersBalanceList(ctx context.Context, req *company.FilterCompanyBalanceRequest) (*company.CompanyBalanceListResponse, error) {
+	s.log.Info("GetUsersBalanceList called", "limit", req.Limit)
+	result, err := s.repoCB.ListBalances(req)
+	if err != nil {
+		s.log.Error("Error fetching company balance", "error", err)
+		return nil, err
+	}
+	s.log.Info("GetUsersBalanceList finished")
+	return result, nil
+}
+
+func (s *CompanyService) DeleteCompanyBalance(ctx context.Context, req *company.Id) (*company.Message, error) {
+	s.log.Info("DeleteCompanyBalance called", "company_id", req.Id)
+	result, err := s.repoCB.DeleteBalance(req)
+	if err != nil {
+		s.log.Error("Error deleting company balance", "error", err)
+		return nil, err
+	}
+	s.log.Info("DeleteCompanyBalance finished")
 	return result, nil
 }

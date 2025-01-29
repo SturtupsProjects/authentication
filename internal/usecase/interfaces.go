@@ -35,3 +35,11 @@ type BranchRepo interface {
 	DeleteBranch(req *company.DeleteBranchRequest) (*company.Message, error)
 	ListBranches(req *company.ListBranchesRequest) (*company.ListBranchesResponse, error)
 }
+
+type CompanyBalanceRepo interface {
+	CreateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error)
+	GetBalance(req *company.Id) (*company.CompanyBalanceResponse, error)
+	UpdateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error)
+	DeleteBalance(req *company.Id) (*company.Message, error)
+	ListBalances(req *company.FilterCompanyBalanceRequest) (*company.CompanyBalanceListResponse, error)
+}

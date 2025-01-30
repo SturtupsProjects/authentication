@@ -27,6 +27,11 @@ type CompanyRepo interface {
 	ListCompanies(req *company.ListCompaniesRequest) (*company.ListCompaniesResponse, error)
 	ListCompanyUsers(req *company.ListCompanyUsersRequest) (*company.ListCompanyUsersResponse, error)
 	CreateUserToCompany(req *company.CreateUserToCompanyRequest) (*company.Id, error)
+	CreateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error)
+	GetBalance(req *company.Id) (*company.CompanyBalanceResponse, error)
+	UpdateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error)
+	DeleteBalance(req *company.Id) (*company.Message, error)
+	ListBalances(req *company.FilterCompanyBalanceRequest) (*company.CompanyBalanceListResponse, error)
 }
 type BranchRepo interface {
 	CreateBranch(req *company.CreateBranchRequest) (*company.BranchResponse, error)
@@ -34,12 +39,4 @@ type BranchRepo interface {
 	UpdateBranch(req *company.UpdateBranchRequest) (*company.BranchResponse, error)
 	DeleteBranch(req *company.DeleteBranchRequest) (*company.Message, error)
 	ListBranches(req *company.ListBranchesRequest) (*company.ListBranchesResponse, error)
-}
-
-type CompanyBalanceRepo interface {
-	CreateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error)
-	GetBalance(req *company.Id) (*company.CompanyBalanceResponse, error)
-	UpdateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error)
-	DeleteBalance(req *company.Id) (*company.Message, error)
-	ListBalances(req *company.FilterCompanyBalanceRequest) (*company.CompanyBalanceListResponse, error)
 }

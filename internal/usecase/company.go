@@ -3,6 +3,7 @@ package usecase
 import (
 	"authentification/internal/generated/company"
 	"authentification/internal/usecase/help"
+	"authentification/pkg/eskiz"
 	"context"
 	"log/slog"
 )
@@ -159,4 +160,29 @@ func (s *CompanyService) DeleteCompanyBalance(ctx context.Context, req *company.
 	}
 	s.log.Info("DeleteCompanyBalance finished")
 	return result, nil
+}
+
+func (s *CompanyService) SendSMS(ctx context.Context, req *company.SmsRequest) (*company.Message, error) {
+	s.log.Info("sending SMS")
+	res, err := s.repoC.GetBalance(&company.Id{Id: req.CompanyId})
+	if err != nil {
+		s.log.Error("failed to get balance")
+		return nil, err
+	}
+	if res.Balance > 200 {
+		token, err := eskiz.LoginToEskiz("ozodjon160605@gmail.com", "AUlv8VzGxAkhv2BbHmoqYLJrLpMPKxddPhUJD40g")
+		if err != nil {
+			s.log.Error("failed to login to Eskiz")
+			return nil, err
+		}
+		err = eskiz.SendNotification(token, req.Phone, req.Message)
+		if err != nil {
+			s.log.Error("failed to send notification")
+			return nil, err
+		}
+	} else {
+		return &company.Message{Message: "Not enough balance"}, nil
+	}
+
+	return &company.Message{Message: "Message sent"}, nil
 }

@@ -16,7 +16,8 @@ CREATE TABLE branches
     company_id UUID         NOT NULL REFERENCES company (company_id) ON DELETE CASCADE,
     created_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
-    deleted_at bigint           default 0
+    deleted_at bigint           default 0,
+    UNIQUE(name, company_id)
 );
 
 -- Таблица пользователей

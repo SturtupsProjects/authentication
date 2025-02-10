@@ -243,9 +243,11 @@ func (r *CompanyRepo) CreateUserToCompany(in *company.CreateUserToCompanyRequest
 
 func (r *CompanyRepo) CreateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error) {
 	var result company.CompanyBalanceResponse
-	query := `INSERT INTO company_balance (company_id, amount) 
-              VALUES ($1, $2) 
-              RETURNING company_id, amount`
+	query := `
+		INSERT INTO company_balance (company_id, amount) 
+		VALUES ($1, $2) 
+		RETURNING company_id, amount
+	`
 	err := r.db.QueryRow(query, req.CompanyId, req.Balance).Scan(&result.CompanyId, &result.Balance)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create balance: %w", err)
@@ -255,20 +257,29 @@ func (r *CompanyRepo) CreateBalance(req *company.CompanyBalanceRequest) (*compan
 
 func (r *CompanyRepo) GetBalance(req *company.Id) (*company.CompanyBalanceResponse, error) {
 	var result company.CompanyBalanceResponse
-	query := `SELECT company_id, amount FROM company_balance WHERE company_id = $1`
+	query := `
+		SELECT company_id, amount 
+		FROM company_balance 
+		WHERE company_id = $1 AND deleted_at = 0
+	`
 	err := r.db.QueryRow(query, req.Id).Scan(&result.CompanyId, &result.Balance)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("balance not found")
 		}
-		return nil, err
+		return nil, fmt.Errorf("failed to get balance: %w", err)
 	}
 	return &result, nil
 }
 
 func (r *CompanyRepo) UpdateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error) {
 	var result company.CompanyBalanceResponse
-	query := `UPDATE company_balance SET amount = $1 WHERE company_id = $2 RETURNING company_id, amount`
+	query := `
+		UPDATE company_balance 
+		SET amount = $1, updated_at = CURRENT_TIMESTAMP 
+		WHERE company_id = $2 AND deleted_at = 0 
+		RETURNING company_id, amount
+	`
 	err := r.db.QueryRow(query, req.Balance, req.CompanyId).Scan(&result.CompanyId, &result.Balance)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update balance: %w", err)
@@ -277,13 +288,21 @@ func (r *CompanyRepo) UpdateBalance(req *company.CompanyBalanceRequest) (*compan
 }
 
 func (r *CompanyRepo) DeleteBalance(req *company.Id) (*company.Message, error) {
-	query := `UPDATE company_balance SET deleted_at = EXTRACT(EPOCH FROM NOW()) WHERE company_id = $1`
+	// Добавляем условие, чтобы обновлять только не удалённые записи
+	query := `
+		UPDATE company_balance 
+		SET deleted_at = EXTRACT(EPOCH FROM NOW()), updated_at = CURRENT_TIMESTAMP 
+		WHERE company_id = $1 AND deleted_at = 0
+	`
 	result, err := r.db.Exec(query, req.Id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete balance: %w", err)
 	}
 
-	rowsAffected, _ := result.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, fmt.Errorf("failed to determine affected rows: %w", err)
+	}
 	if rowsAffected == 0 {
 		return nil, fmt.Errorf("balance not found or already deleted")
 	}
@@ -293,8 +312,16 @@ func (r *CompanyRepo) DeleteBalance(req *company.Id) (*company.Message, error) {
 
 func (r *CompanyRepo) ListBalances(req *company.FilterCompanyBalanceRequest) (*company.CompanyBalanceListResponse, error) {
 	var balances []*company.CompanyBalanceResponse
-	query := `SELECT company_id, amount FROM company_balance ORDER BY created_at DESC LIMIT $2 OFFSET $3`
-	rows, err := r.db.Query(query, req.Limit, (req.Page-1)*req.Limit)
+	query := `
+		SELECT company_id, amount 
+		FROM company_balance 
+		WHERE deleted_at = 0
+		ORDER BY created_at DESC 
+		LIMIT $1 OFFSET $2
+	`
+	// Расчёт смещения: (Page-1)*Limit
+	offset := (req.Page - 1) * req.Limit
+	rows, err := r.db.Query(query, req.Limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list balances: %w", err)
 	}
@@ -311,5 +338,6 @@ func (r *CompanyRepo) ListBalances(req *company.FilterCompanyBalanceRequest) (*c
 		return nil, fmt.Errorf("error iterating over balance rows: %w", err)
 	}
 
+	// Предположим, что в ответе поле переименовано в Balances
 	return &company.CompanyBalanceListResponse{Users: balances}, nil
 }

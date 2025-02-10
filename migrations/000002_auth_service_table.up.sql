@@ -5,4 +5,4 @@ CREATE TABLE company_balance (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at bigint default 0
-)
+);

@@ -140,3 +140,13 @@
 {"time":"2025-01-11T22:36:25.629815047+05:00","level":"INFO","msg":"CreateBranch finished"}
 {"time":"2025-01-11T22:36:30.507511933+05:00","level":"INFO","msg":"ListBranches called","pagination":{"company_id":"8de761a0-e6d9-44c6-8861-ebf9d1351515","limit":10,"page":1}}
 {"time":"2025-01-11T22:36:30.508537304+05:00","level":"INFO","msg":"ListBranches finished"}
+{"time":"2025-02-05T17:00:26.135453095+05:00","level":"INFO","msg":"CreateCompanyBalance called","request":{"company_id":"cdb8a9c6-00d2-444e-9ab5-e4cb66a8c6d4","balance":10}}
+{"time":"2025-02-05T17:00:26.937092926+05:00","level":"ERROR","msg":"Error creating company balance","error":"failed to create balance: pq: relation \"company_balance\" does not exist"}
+{"time":"2025-02-05T17:03:03.547343081+05:00","level":"INFO","msg":"CreateCompanyBalance called","request":{"company_id":"cdb8a9c6-00d2-444e-9ab5-e4cb66a8c6d4","balance":10}}
+{"time":"2025-02-05T17:03:03.869268017+05:00","level":"INFO","msg":"CreateCompanyBalance finished"}
+{"time":"2025-02-05T17:05:28.759369174+05:00","level":"INFO","msg":"UpdateCompanyBalance called","company_id":"cdb8a9c6-00d2-444e-9ab5-e4cb66a8c6d4"}
+{"time":"2025-02-05T17:05:29.065961729+05:00","level":"INFO","msg":"UpdateCompanyBalance finished"}
+{"time":"2025-02-05T17:05:35.859355862+05:00","level":"INFO","msg":"UpdateCompanyBalance called","company_id":"cdb8a9c6-00d2-444e-9ab5-e4cb66a8c6d4"}
+{"time":"2025-02-05T17:05:36.147569345+05:00","level":"INFO","msg":"UpdateCompanyBalance finished"}
+{"time":"2025-02-05T17:05:48.183787206+05:00","level":"INFO","msg":"GetUsersBalanceList called","limit":5}
+{"time":"2025-02-05T17:05:48.475611812+05:00","level":"INFO","msg":"GetUsersBalanceList finished"}

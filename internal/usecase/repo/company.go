@@ -2,10 +2,15 @@ package repo
 
 import (
 	"authentification/internal/generated/company"
+	"authentification/internal/usecase"
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -14,7 +19,7 @@ type CompanyRepo struct {
 	db *sqlx.DB
 }
 
-func NewCompanyStorage(db *sqlx.DB) *CompanyRepo {
+func NewCompanyStorage(db *sqlx.DB) usecase.CompanyRepo {
 	return &CompanyRepo{db: db}
 }
 
@@ -36,6 +41,16 @@ func (r *CompanyRepo) CreateCompany(in *company.CreateCompanyRequest) (*company.
 		&result.CreatedAt,
 		&result.UpdatedAt,
 	)
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("failed to insert company: %v", err)
+	}
+
+	query = `insert into company_account_balance
+    (company_id, monthly_fee, last_payment_date, next_due_date)
+		values ($1, $2, $3, $4)`
+
+	_, err = tx.Exec(query, result.CompanyId, 250000, time.Now(), time.Now().AddDate(0, 1, 0))
 	if err != nil {
 		tx.Rollback()
 		return nil, fmt.Errorf("failed to insert company: %v", err)
@@ -241,103 +256,223 @@ func (r *CompanyRepo) CreateUserToCompany(in *company.CreateUserToCompanyRequest
 	return &company.Id{Id: userID}, nil
 }
 
-func (r *CompanyRepo) CreateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error) {
-	var result company.CompanyBalanceResponse
-	query := `
-		INSERT INTO company_balance (company_id, amount) 
-		VALUES ($1, $2) 
-		RETURNING company_id, amount
-	`
-	err := r.db.QueryRow(query, req.CompanyId, req.Balance).Scan(&result.CompanyId, &result.Balance)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create balance: %w", err)
-	}
-	return &result, nil
-}
+// ----------------------------------------- Company Balance ----------------------------------------------
 
-func (r *CompanyRepo) GetBalance(req *company.Id) (*company.CompanyBalanceResponse, error) {
-	var result company.CompanyBalanceResponse
-	query := `
-		SELECT company_id, amount 
-		FROM company_balance 
-		WHERE company_id = $1 AND deleted_at = 0
-	`
-	err := r.db.QueryRow(query, req.Id).Scan(&result.CompanyId, &result.Balance)
+func (r *CompanyRepo) ReplenishmentCompany(in *company.ReplenishmentRequest) (*company.ReplenishmentResponse, error) {
+	tx, err := r.db.Beginx()
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("balance not found")
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	var companyBalance struct {
+		ID          uuid.UUID `db:"id"`
+		Balance     float64   `db:"balance"`
+		MonthlyFee  float64   `db:"monthly_fee"`
+		Status      string    `db:"status"`
+		NextDueDate time.Time `db:"next_due_date"`
+	}
+
+	// Получаем текущий баланс
+	err = tx.Get(&companyBalance, `
+		SELECT id, balance, monthly_fee, status, next_due_date 
+		FROM company_account_balance 
+		WHERE company_id = $1 FOR UPDATE`, in.CompanyId)
+
+	if err != nil {
+		return nil, errors.New("company not found or DB error")
+	}
+
+	// Пополняем баланс
+	newBalance := companyBalance.Balance + in.Amount
+
+	// Проверяем, хватит ли денег на оплату
+	if companyBalance.Status == "blocked" && newBalance >= companyBalance.MonthlyFee {
+		newBalance -= companyBalance.MonthlyFee
+		nextDueDate := time.Now().AddDate(0, 1, 0) // +1 месяц
+
+		_, err = tx.Exec(`
+			UPDATE company_account_balance 
+			SET balance = $1, status = 'active', next_due_date = $2, last_payment_date = NOW()
+			WHERE id = $3`, newBalance, nextDueDate, companyBalance.ID)
+
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("failed to get balance: %w", err)
+	} else {
+		// Просто обновляем баланс
+		_, err = tx.Exec(`
+			UPDATE company_account_balance 
+			SET balance = $1 WHERE id = $2`, newBalance, companyBalance.ID)
+
+		if err != nil {
+			return nil, err
+		}
 	}
-	return &result, nil
+
+	// Записываем транзакцию
+	_, err = tx.Exec(`
+		INSERT INTO company_balance_transaction (id, company_id, transaction_date, category, amount)
+		VALUES ($1, $2, NOW(), 'deposit', $3)`, uuid.New(), in.CompanyId, in.Amount)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	return &company.ReplenishmentResponse{
+		Success:    true,
+		Message:    "Balance replenished successfully",
+		NewBalance: newBalance,
+	}, nil
 }
 
-func (r *CompanyRepo) UpdateBalance(req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error) {
-	var result company.CompanyBalanceResponse
-	query := `
-		UPDATE company_balance 
-		SET amount = $1, updated_at = CURRENT_TIMESTAMP 
-		WHERE company_id = $2 AND deleted_at = 0 
-		RETURNING company_id, amount
-	`
-	err := r.db.QueryRow(query, req.Balance, req.CompanyId).Scan(&result.CompanyId, &result.Balance)
+func (r *CompanyRepo) GetCompanyBalance(in *company.Id) (*company.CompanyBalance, error) {
+	var balance float64
+	var status string
+	var nextDueDate sql.NullTime
+
+	err := r.db.QueryRow(`
+		SELECT balance, status, next_due_date 
+		FROM company_account_balance 
+		WHERE company_id = $1`, in.Id).
+		Scan(&balance, &status, &nextDueDate)
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to update balance: %w", err)
+		if err == sql.ErrNoRows {
+			return nil, errors.New("company not found")
+		}
+		return nil, err
 	}
-	return &result, nil
+
+	return &company.CompanyBalance{
+		Balance:     balance,
+		Status:      status,
+		NextDueDate: nextDueDate.Time.Format(time.RFC3339),
+	}, nil
 }
 
-func (r *CompanyRepo) DeleteBalance(req *company.Id) (*company.Message, error) {
-	// Добавляем условие, чтобы обновлять только не удалённые записи
-	query := `
-		UPDATE company_balance 
-		SET deleted_at = EXTRACT(EPOCH FROM NOW()), updated_at = CURRENT_TIMESTAMP 
-		WHERE company_id = $1 AND deleted_at = 0
-	`
-	result, err := r.db.Exec(query, req.Id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to delete balance: %w", err)
-	}
+// 🔹 Получение истории транзакций компании
+func (r *CompanyRepo) GetTransactionHistory(in *company.TransactionHistoryRequest) (*company.TransactionHistoryRes, error) {
+	rows, err := r.db.Query(`
+		SELECT id, transaction_date, category, amount
+		FROM company_balance_transaction 
+		WHERE company_id = $1 AND transaction_date BETWEEN $2 AND $3 
+		ORDER BY transaction_date DESC`, in.CompanyId, in.StartDate, in.EndDate)
 
-	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return nil, fmt.Errorf("failed to determine affected rows: %w", err)
-	}
-	if rowsAffected == 0 {
-		return nil, fmt.Errorf("balance not found or already deleted")
-	}
-
-	return &company.Message{Message: "Balance deleted successfully"}, nil
-}
-
-func (r *CompanyRepo) ListBalances(req *company.FilterCompanyBalanceRequest) (*company.CompanyBalanceListResponse, error) {
-	var balances []*company.CompanyBalanceResponse
-	query := `
-		SELECT company_id, amount 
-		FROM company_balance 
-		WHERE deleted_at = 0
-		ORDER BY created_at DESC 
-		LIMIT $1 OFFSET $2
-	`
-	// Расчёт смещения: (Page-1)*Limit
-	offset := (req.Page - 1) * req.Limit
-	rows, err := r.db.Query(query, req.Limit, offset)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list balances: %w", err)
+		return nil, err
 	}
 	defer rows.Close()
 
+	var transactions []*company.Transaction
 	for rows.Next() {
-		var balance company.CompanyBalanceResponse
-		if err := rows.Scan(&balance.CompanyId, &balance.Balance); err != nil {
-			return nil, fmt.Errorf("failed to scan balance row: %w", err)
+		var transaction company.Transaction
+		var transactionDate time.Time
+
+		err := rows.Scan(&transaction.TransactionId, &transactionDate, &transaction.Category, &transaction.Amount)
+		if err != nil {
+			return nil, err
 		}
-		balances = append(balances, &balance)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating over balance rows: %w", err)
+		transaction.TransactionDate = transactionDate.Format(time.RFC3339)
+		transactions = append(transactions, &transaction)
 	}
 
-	// Предположим, что в ответе поле переименовано в Balances
-	return &company.CompanyBalanceListResponse{Users: balances}, nil
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &company.TransactionHistoryRes{Transactions: transactions}, nil
+}
+
+func BalanceChecker(db *sqlx.DB) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// 1. Получаем все компании, у которых наступила дата списания
+	query := `
+		SELECT id, balance, monthly_fee, next_due_date 
+		FROM company_account_balance 
+		WHERE next_due_date <= NOW();
+	`
+	rows, err := db.QueryContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	// 2. Обрабатываем каждую компанию
+	for rows.Next() {
+		var (
+			companyID   string
+			balance     float64
+			monthlyFee  float64
+			nextDueDate time.Time
+		)
+
+		if err := rows.Scan(&companyID, &balance, &monthlyFee, &nextDueDate); err != nil {
+			return err
+		}
+
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			return err
+		}
+
+		if balance >= monthlyFee {
+			// 3. Списываем деньги и обновляем дату следующего списания
+			updateQuery := `
+				UPDATE company_account_balance 
+				SET balance = balance - $1, 
+				    last_payment_date = NOW(), 
+				    next_due_date = NOW() + INTERVAL '1 month',
+				    status = 'active'
+				WHERE id = $2;
+			`
+			_, err := tx.ExecContext(ctx, updateQuery, monthlyFee, companyID)
+			if err != nil {
+				tx.Rollback()
+				log.Printf("Ошибка при списании для компании %s: %v", companyID, err)
+				continue
+			}
+
+			// 4. Записываем транзакцию списания
+			insertTransaction := `
+				INSERT INTO company_balance_transaction (company_id, transaction_date, category, amount)
+				VALUES ($1, NOW(), 'charge', $2);
+			`
+			_, err = tx.ExecContext(ctx, insertTransaction, companyID, monthlyFee)
+			if err != nil {
+				tx.Rollback()
+				log.Printf("Ошибка при создании транзакции для компании %s: %v", companyID, err)
+				continue
+			}
+
+			tx.Commit()
+		} else {
+			// 5. Недостаточно денег — блокируем аккаунт
+			blockQuery := `
+				UPDATE company_account_balance 
+				SET status = 'blocked' 
+				WHERE id = $1;
+			`
+			_, err := tx.ExecContext(ctx, blockQuery, companyID)
+			if err != nil {
+				tx.Rollback()
+				log.Printf("Ошибка при блокировке компании %s: %v", companyID, err)
+				continue
+			}
+			tx.Commit()
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	return nil
 }

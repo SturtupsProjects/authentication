@@ -263,3 +263,15 @@ func (u *UserRepo) LogIn(in *pb.LogInRequest) (*pb.LogInResponse, string, string
 	}
 	return &loginResp, password, companyID, nil
 }
+
+func (u *UserRepo) BalanceChecker(companyID string) (string, error) {
+
+	var status string
+
+	err := u.db.QueryRow("select status from company_account_balance where company_id = $1", companyID).Scan(&status)
+	if err != nil {
+		return "", err
+	}
+
+	return status, nil
+}

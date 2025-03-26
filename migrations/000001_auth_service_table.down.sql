@@ -1,7 +1,13 @@
 DROP TABLE IF EXISTS clients;
-DROP TYPE IF EXISTS type_client;
-DROP TYPE IF EXISTS type;
+DROP TABLE IF EXISTS salary_adjustments;
+DROP TABLE IF EXISTS staff_salary;
 DROP TABLE IF EXISTS users;
-DROP TYPE IF EXISTS role;
 DROP TABLE IF EXISTS branches;
 DROP TABLE IF EXISTS company;
+
+DROP TYPE IF EXISTS bonuses_type;
+DROP TYPE IF EXISTS adjustment_type;
+DROP TYPE IF EXISTS currency_type;
+DROP TYPE IF EXISTS type_client;
+DROP TYPE IF EXISTS type;
+DROP TYPE IF EXISTS role;

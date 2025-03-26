@@ -107,64 +107,48 @@ func (s *CompanyService) CreateUserToCompany(ctx context.Context, req *company.C
 	return result, nil
 }
 
-func (s *CompanyService) CreateCompanyBalance(ctx context.Context, req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error) {
-	s.log.Info("CreateCompanyBalance called", "request", req)
-	result, err := s.repoC.CreateBalance(req)
-	if err != nil {
-		s.log.Error("Error creating company balance", "error", err)
-		return nil, err
-	}
-	s.log.Info("CreateCompanyBalance finished")
-	return result, nil
-}
-func (s *CompanyService) GetCompanyBalance(ctx context.Context, req *company.Id) (*company.CompanyBalanceResponse, error) {
-	s.log.Info("GetCompanyBalance called", "company_id", req.Id)
-	result, err := s.repoC.GetBalance(req)
-	if err != nil {
-		s.log.Error("Error fetching company balance", "error", err)
-		return nil, err
-	}
-	s.log.Info("GetCompanyBalance finished")
-	return result, nil
+func (s *CompanyService) ReplenishmentCompany(ctx context.Context, in *company.ReplenishmentRequest) (*company.ReplenishmentResponse, error) {
 
+	s.log.Info("ReplenishmentCompany called", "company_id", in.CompanyId)
+
+	res, err := s.repoC.ReplenishmentCompany(in)
+	if err != nil {
+		s.log.Error("Error replenishment company", "error", err)
+		return nil, err
+	}
+
+	return res, nil
 }
 
-func (s *CompanyService) UpdateCompanyBalance(ctx context.Context, req *company.CompanyBalanceRequest) (*company.CompanyBalanceResponse, error) {
-	s.log.Info("UpdateCompanyBalance called", "company_id", req.CompanyId)
-	result, err := s.repoC.UpdateBalance(req)
+func (s *CompanyService) GetCompanyBalance(ctx context.Context, in *company.Id) (*company.CompanyBalance, error) {
+
+	s.log.Info("GetCompanyBalance")
+
+	res, err := s.repoC.GetCompanyBalance(in)
 	if err != nil {
-		s.log.Error("Error updating company balance", "error", err)
+		s.log.Error("Error getting company balance", "error", err)
 		return nil, err
 	}
-	s.log.Info("UpdateCompanyBalance finished")
-	return result, nil
+
+	return res, nil
 }
 
-func (s *CompanyService) GetUsersBalanceList(ctx context.Context, req *company.FilterCompanyBalanceRequest) (*company.CompanyBalanceListResponse, error) {
-	s.log.Info("GetUsersBalanceList called", "limit", req.Limit)
-	result, err := s.repoC.ListBalances(req)
-	if err != nil {
-		s.log.Error("Error fetching company balance", "error", err)
-		return nil, err
-	}
-	s.log.Info("GetUsersBalanceList finished")
-	return result, nil
-}
+func (s *CompanyService) GetTransactionHistory(ctx context.Context, in *company.TransactionHistoryRequest) (*company.TransactionHistoryRes, error) {
 
-func (s *CompanyService) DeleteCompanyBalance(ctx context.Context, req *company.Id) (*company.Message, error) {
-	s.log.Info("DeleteCompanyBalance called", "company_id", req.Id)
-	result, err := s.repoC.DeleteBalance(req)
+	s.log.Info("GetTransactionHistory")
+
+	res, err := s.repoC.GetTransactionHistory(in)
 	if err != nil {
-		s.log.Error("Error deleting company balance", "error", err)
+		s.log.Error("Error getting transaction history", "error", err)
 		return nil, err
 	}
-	s.log.Info("DeleteCompanyBalance finished")
-	return result, nil
+
+	return res, nil
 }
 
 func (s *CompanyService) SendSMS(ctx context.Context, req *company.SmsRequest) (*company.Message, error) {
 	s.log.Info("sending SMS")
-	res, err := s.repoC.GetBalance(&company.Id{Id: req.CompanyId})
+	res, err := s.repoC.GetCompanyBalance(&company.Id{Id: req.CompanyId})
 	if err != nil {
 		s.log.Error("failed to get balance")
 		return nil, err

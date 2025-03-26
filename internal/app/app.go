@@ -32,22 +32,49 @@ func Run(cfg *config.Config) {
 	userSt := repo.NewUserRepo(db)
 	companySt := repo.NewCompanyStorage(db)
 	branchSt := repo.NewBranchRepo(db)
+	workerRepo := repo.NewWorkersRepo(db)
 
-	authSr := usecase.NewAuthServiceServer(userSt, logger1, cfg)
+	authSr := usecase.NewAuthServiceServer(userSt, workerRepo, logger1, cfg)
 	companySr := usecase.NewCompanyService(companySt, branchSt, logger1)
 
-	listen, err := net.Listen("tcp", cfg.RUN_PORT)
-	fmt.Println("listening on port " + cfg.RUN_PORT)
-	if err != nil {
-		logger1.Error("Error listening on port " + cfg.RUN_PORT)
-		log.Fatal(err)
-	}
+	// ------------ starting cron -------------------
 
-	service := grpc.NewServer()
-	pb.RegisterAuthServiceServer(service, authSr)
-	pc.RegisterCompanyServiceServer(service, companySr)
-	if err := service.Serve(listen); err != nil {
-		logger1.Error("Error starting server")
-		log.Fatal(err)
+	//{
+	//	c := cron.New()
+	//
+	//	_, err = c.AddFunc("0 */3 * * *", func() {
+	//		err := repo.BalanceChecker(db)
+	//		if err != nil {
+	//			log.Printf("Ошибка выполнения BalanceChecker: %v", err)
+	//		} else {
+	//			log.Println("BalanceChecker успешно выполнен")
+	//		}
+	//	})
+	//
+	//	if err != nil {
+	//		log.Fatalf("Ошибка при добавлении задачи: %v", err)
+	//	}
+	//
+	//	c.Start()
+	//}
+
+	log.Println("Cron dan otdi")
+
+	// ----------------------- starting services --------------------
+	{
+		listen, err := net.Listen("tcp", cfg.RUN_PORT)
+		fmt.Println("listening on port " + cfg.RUN_PORT)
+		if err != nil {
+			logger1.Error("Error listening on port " + cfg.RUN_PORT)
+			log.Fatal(err)
+		}
+
+		service := grpc.NewServer()
+		pb.RegisterAuthServiceServer(service, authSr)
+		pc.RegisterCompanyServiceServer(service, companySr)
+		if err := service.Serve(listen); err != nil {
+			logger1.Error("Error starting server")
+			log.Fatal(err)
+		}
 	}
 }

@@ -11,18 +11,18 @@ import (
 	"os"
 
 	pb "authentification/internal/generated/user"
-	"authentification/internal/usecase/repo"
 )
 
 type AuthServiceServer struct {
-	repo *repo.UserRepo
-	log  *slog.Logger
-	conf *config.Config
+	repo    UsersRepo
+	workers WorkersRepo
+	log     *slog.Logger
+	conf    *config.Config
 	pb.UnimplementedAuthServiceServer
 }
 
-func NewAuthServiceServer(repo *repo.UserRepo, log *slog.Logger, conf *config.Config) *AuthServiceServer {
-	return &AuthServiceServer{repo: repo, log: log, conf: conf}
+func NewAuthServiceServer(repo UsersRepo, workersRepo WorkersRepo, log *slog.Logger, conf *config.Config) *AuthServiceServer {
+	return &AuthServiceServer{repo: repo, workers: workersRepo, log: log, conf: conf}
 }
 
 func (s *AuthServiceServer) RegisterAdmin(ctx context.Context, req *pb.MessageResponse) (*pb.MessageResponse, error) {
@@ -132,37 +132,71 @@ func (s *AuthServiceServer) DeleteUser(ctx context.Context, req *pb.UserIDReques
 
 // LogIn handles user login
 func (s *AuthServiceServer) LogIn(ctx context.Context, req *pb.LogInRequest) (*pb.TokenResponse, error) {
-	s.log.Info("LogIn called", "phone_number", req.PhoneNumber)
 
-	loginResp, pass, CompanyId, err := s.repo.LogIn(req)
+	loginResp, pass, companyID, err := s.repo.LogIn(req)
 	if err != nil {
 		s.log.Error("Login failed", "phone_number", req.PhoneNumber, "error", err)
 		return nil, fmt.Errorf("login failed: %w", err)
 	}
 
-	ok := help.CheckPasswordHash(req.Password, pass)
-	if ok == false {
-		s.log.Error("Login failed", "phone_number", req.PhoneNumber, "error", err)
+	if !help.CheckPasswordHash(req.Password, pass) {
+		s.log.Error("Login failed", "phone_number", req.PhoneNumber, "error", "invalid password")
 		return nil, fmt.Errorf("login failed: %s", "Invalid password")
 	}
 
-	accessToken, err := token.GenerateAccessToken(&entity.LogInToken{UserId: loginResp.UserId, Role: loginResp.Role, FirstName: loginResp.FirstName, PhoneNumber: loginResp.PhoneNumber, CompanyId: CompanyId})
-	if err != nil {
-		s.log.Error("Error in generating access token", "error", err)
-		return nil, err
+	//isBlocked, err := s.repo.BalanceChecker(loginResp.CompanyId)
+	//if err != nil {
+	//	s.log.Error("Login failed", "phone_number", req.PhoneNumber, "error", err)
+	//	return nil, fmt.Errorf("login failed: %w", err)
+	//}
+	//if isBlocked == "blocked" {
+	//	s.log.Info("Company Blocked", "phone_number", req.PhoneNumber)
+	//	return nil, errors.New("Company Blocked, not enough balance")
+	//}
+
+	tokenInput := &entity.LogInToken{
+		UserId:      loginResp.UserId,
+		Role:        loginResp.Role,
+		FirstName:   loginResp.FirstName,
+		PhoneNumber: loginResp.PhoneNumber,
+		CompanyId:   companyID,
 	}
 
-	refreshToken, err := token.GenerateRefreshToken(&entity.LogInToken{UserId: loginResp.UserId, Role: loginResp.Role, FirstName: loginResp.FirstName, PhoneNumber: loginResp.PhoneNumber, CompanyId: CompanyId})
-	if err != nil {
-		s.log.Error("Error in generating refresh token", "error", err)
-		return nil, err
+	type tokenResult struct {
+		token string
+		err   error
+	}
+
+	chAccess := make(chan tokenResult, 1)
+	chRefresh := make(chan tokenResult, 1)
+
+	go func() {
+		token, err := token.GenerateAccessToken(tokenInput)
+		chAccess <- tokenResult{token: token, err: err}
+	}()
+
+	go func() {
+		token, err := token.GenerateRefreshToken(tokenInput)
+		chRefresh <- tokenResult{token: token, err: err}
+	}()
+
+	accessResult := <-chAccess
+	if accessResult.err != nil {
+		s.log.Error("Error in generating access token", "error", accessResult.err)
+		return nil, accessResult.err
+	}
+
+	refreshResult := <-chRefresh
+	if refreshResult.err != nil {
+		s.log.Error("Error in generating refresh token", "error", refreshResult.err)
+		return nil, refreshResult.err
 	}
 
 	expireAt := token.GetExpires()
 	s.log.Info("Login successful", "user_id", loginResp.UserId)
 	return &pb.TokenResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken:  accessResult.token,
+		RefreshToken: refreshResult.token,
 		ExpireAt:     int32(expireAt),
 		UserId:       loginResp.UserId,
 	}, nil

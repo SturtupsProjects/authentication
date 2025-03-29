@@ -113,63 +113,59 @@ func (w *workersRepo) GetSalaryByID(in *pb.ID) (*pb.SalaryResponse, error) {
 }
 
 func (w *workersRepo) ListSalaries(in *pb.GetSalaryRequest) (*pb.GetSalaryList, error) {
+	var salaries []*pb.SalaryResponse
+	var args []interface{}
+	argIndex := 1
+
+	// Фильтрация по компании
+	conditions := []string{"u.company_id = $1"}
+	args = append(args, in.CompanyId)
+	argIndex++
+
 	allowedSortFields := map[string]string{
 		"salary_date":   "s.salary_date",
-		"created_at":    "s.created_at",
+		"created_at":    "created_at",
 		"salary_amount": "s.salary_amount",
 	}
 	sortField, ok := allowedSortFields[strings.ToLower(in.SortField)]
 	if !ok {
 		sortField = "s.salary_date"
 	}
-
 	order := strings.ToUpper(in.Order)
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
 
-	var query string
-	var rows *sql.Rows
-	var err error
+	baseQuery := fmt.Sprintf(`
+		SELECT DISTINCT
+			u.user_id, u.first_name, u.last_name, u.phone_number, u.company_id,
+			s.salary_id, s.currency_code, s.salary_amount, s.salary_date,
+			to_char(s.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,
+			to_char(s.updated_at, 'YYYY-MM-DD HH24:MI:SS') as updated_at
+		FROM users u
+		LEFT JOIN staff_salary s ON u.user_id = s.user_id
+		WHERE %s
+		ORDER BY %s %s`,
+		strings.Join(conditions, " AND "),
+		sortField, order)
 
-	// Если limit и page равны 0, выполняем запрос без пагинации
-	if in.Limit == 0 && in.Page == 0 {
-		query = fmt.Sprintf(`
-			SELECT u.user_id, u.first_name, u.last_name, u.phone_number, u.company_id,
-			       s.salary_id, s.currency_code, s.salary_amount, s.salary_date,
-			       to_char(s.created_at, 'YYYY-MM-DD HH24:MI:SS'), 
-			       to_char(s.updated_at, 'YYYY-MM-DD HH24:MI:SS')
-			FROM users u
-			LEFT JOIN staff_salary s ON u.user_id = s.user_id AND u.company_id = $1
-			ORDER BY %s %s
-		`, sortField, order)
-		rows, err = w.db.Query(query, in.CompanyId)
-	} else {
-		// Рассчитываем offset для пагинации
-		offset := (in.Page - 1) * in.Limit
-		query = fmt.Sprintf(`
-			SELECT u.user_id, u.first_name, u.last_name, u.phone_number, u.company_id,
-			       s.salary_id, s.currency_code, s.salary_amount, s.salary_date,
-			       to_char(s.created_at, 'YYYY-MM-DD HH24:MI:SS'), 
-			       to_char(s.updated_at, 'YYYY-MM-DD HH24:MI:SS')
-			FROM users u
-			LEFT JOIN staff_salary s ON u.user_id = s.user_id AND u.company_id = $1
-			ORDER BY %s %s
-			LIMIT $2 OFFSET $3
-		`, sortField, order)
-		rows, err = w.db.Query(query, in.CompanyId, in.Limit, offset)
+	if in.Limit > 0 && in.Page > 0 {
+		baseQuery += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argIndex, argIndex+1)
+		args = append(args, in.Limit, (in.Page-1)*in.Limit)
+		argIndex += 2
 	}
 
+	rows, err := w.db.Query(baseQuery, args...)
 	if err != nil {
 		return nil, fmt.Errorf("ListSalaries: %w", err)
 	}
 	defer rows.Close()
 
-	var salaries []*pb.SalaryResponse
 	for rows.Next() {
 		var salary pb.SalaryResponse
 		var salaryId, currencyCode, salaryDate, createdAt, updatedAt sql.NullString
 		var amount sql.NullFloat64
+
 		if err := rows.Scan(
 			&salary.UserId,
 			&salary.FirstName,
@@ -185,6 +181,7 @@ func (w *workersRepo) ListSalaries(in *pb.GetSalaryRequest) (*pb.GetSalaryList, 
 		); err != nil {
 			return nil, fmt.Errorf("ListSalaries scan: %w", err)
 		}
+
 		if salaryId.Valid {
 			salary.SalaryId = salaryId.String
 		}
@@ -197,10 +194,19 @@ func (w *workersRepo) ListSalaries(in *pb.GetSalaryRequest) (*pb.GetSalaryList, 
 		if salaryDate.Valid {
 			salary.SalaryDate = salaryDate.String
 		}
+		salary.CreatedAt = createdAt.String
+		salary.UpdatedAt = updatedAt.String
+
 		salaries = append(salaries, &salary)
 	}
 
-	return &pb.GetSalaryList{Salaries: salaries}, nil
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("ListSalaries rows error: %w", err)
+	}
+
+	return &pb.GetSalaryList{
+		Salaries: salaries,
+	}, nil
 }
 
 func (w *workersRepo) CreateAdjustment(in *pb.AdjustmentRequest) (*pb.AdjustmentResponse, error) {
@@ -332,7 +338,7 @@ func (w *workersRepo) CloseAdjustment(in *pb.ID) (*pb.AdjustmentResponse, error)
 
 func (w *workersRepo) GetAdjustmentByID(in *pb.ID) (*pb.AdjustmentResponse, error) {
 	query := `
-		SELECT u.user_id, u.first_name, u.last_name, u.phone_number, u.email, u.company_id,
+		SELECT u.user_id, u.first_name, u.last_name, u.phone_number, u.company_id,
 		       a.adjustment_id, a.adjustment_type, a.currency_code, a.adjustment_amount, a.adjustment_date, a.is_active,
 		       to_char(a.created_at, 'YYYY-MM-DD HH24:MI:SS'), 
 		       to_char(a.updated_at, 'YYYY-MM-DD HH24:MI:SS')

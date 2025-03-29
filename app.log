@@ -164,3 +164,63 @@
 {"time":"2025-03-26T23:33:49.830568953+05:00","level":"INFO","msg":"list salaries to worker","result":{"salaries":[{"salary_id":"128bd588-7cf5-46c1-bcad-c15163bbf560","user_id":"3917a3a3-cc6a-4854-b844-c0a9c7b7e88f","first_name":"string","last_name":"string","phone_number":"string","currency_code":"USD","amount":1000,"salary_date":"2024-12-10T00:00:00Z","company_id":"5e47d37c-9a46-4d8a-8a09-7bb92eef7e07"},{"user_id":"ceae8827-ff3b-435d-a118-483e8196256e","first_name":"Bekzod","last_name":"Xoliqov","phone_number":"+998907116087","company_id":"efe801d4-5088-4774-bf3f-03081a8f454b"},{"user_id":"1a63f643-d54a-44b2-9238-011f83460c66","first_name":"Nosirbek","last_name":"Ismoilov","phone_number":"+998996791619","company_id":"cdb8a9c6-00d2-444e-9ab5-e4cb66a8c6d4"},{"user_id":"a45a09b7-0394-41b1-ad72-bdb42b81bcee","first_name":"Sherzodbek","phone_number":"998919258700","company_id":"e6102021-cea9-4305-a940-9b6a54b821e4"},{"user_id":"e308fec1-7289-4dbc-84c8-ead1d3d8bae8","first_name":"admin","last_name":"admin","phone_number":"admin","company_id":"e6102021-cea9-4305-a940-9b6a54b821e4"},{"user_id":"f4bd1a30-6007-4681-aa8d-eda9d301ada4","first_name":"Muxriddin","last_name":"Arifov","phone_number":"+998919234441","company_id":"5c208b77-8da4-436f-9fee-b2ad77354912"},{"user_id":"1dc1ddae-f2c9-49a5-b391-adb2fa56ca05","first_name":"Sherzodbek","last_name":" ","phone_number":"+998994266661","company_id":"f6177b73-8b3f-4cae-90ac-169d83ad846b"},{"user_id":"7593bc1d-ce1a-4195-aa73-e1f4f4b79b19","first_name":"BUNYOD","last_name":"XASANOV","phone_number":"+998938860600","company_id":"540e8197-e45b-46f7-8798-bf6e75570832"},{"user_id":"44df6f5f-f666-43cc-9232-74bd38f52da6","first_name":"Abdurahmon","last_name":"Safarov","phone_number":"+998912438848","company_id":"794b6fce-7333-493b-a2fe-f7143e6ce37b"},{"user_id":"f4832177-c301-4914-97f2-beaff22a7c9a","first_name":"user","last_name":"user","phone_number":"99","company_id":"efe801d4-5088-4774-bf3f-03081a8f454b"},{"user_id":"c8c0679d-6b07-402c-94ed-b22881b845b8","first_name":"Mirjalol","last_name":"Flutter","phone_number":"+998505538364","company_id":"09433125-0939-4e47-a826-0a5c2a7462a3"},{"user_id":"0c802eda-bc05-427f-a0d5-2514fb465e27","first_name":"Azizbek","last_name":"Fatullayev","phone_number":"+998907457593","company_id":"540e8197-e45b-46f7-8798-bf6e75570832"}]}}
 {"time":"2025-03-26T23:36:07.829387317+05:00","level":"ERROR","msg":"Error in list adjustments to worker","error":"ListAdjustments scan: sql: expected 14 destination arguments in Scan, not 13"}
 {"time":"2025-03-26T23:36:39.469823748+05:00","level":"INFO","msg":"list adjustments to worker","result":{"adjustments":[{"adjustment_id":"a2ed6965-1246-4348-9367-b487d1dafbd0","user_id":"3917a3a3-cc6a-4854-b844-c0a9c7b7e88f","first_name":"string","last_name":"string","phone_number":"string","adjustment_type":"bonus","currency_code":"USD","amount":500,"adjustment_date":"2024-12-27T00:00:00Z","is_active":"true","created_at":"2025-03-26 18:32:55","updated_at":"2025-03-26 18:32:55","company_id":"5e47d37c-9a46-4d8a-8a09-7bb92eef7e07"}]}}
+{"time":"2025-03-29T17:50:14.333749305+05:00","level":"INFO","msg":"GetClient called","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T17:50:14.675145996+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T17:50:14.676714509+05:00","level":"INFO","msg":"GetClient called","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T17:50:14.993142331+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T17:50:14.994357362+05:00","level":"INFO","msg":"GetClient called","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T17:50:15.290270701+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T17:51:39.553494727+05:00","level":"INFO","msg":"GetClient called","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T17:51:39.890409129+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T17:51:39.892302616+05:00","level":"INFO","msg":"GetClient called","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T17:51:40.263400065+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T17:51:40.265027022+05:00","level":"INFO","msg":"GetClient called","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T17:51:40.663491376+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T17:55:07.02117823+05:00","level":"INFO","msg":"GetClient called","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T17:55:07.317707313+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T17:55:07.319101976+05:00","level":"INFO","msg":"GetClient called","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T17:55:07.622442564+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T17:55:07.623719744+05:00","level":"INFO","msg":"GetClient called","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T17:55:07.93301551+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T17:57:46.437221644+05:00","level":"INFO","msg":"GetClient called","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T17:57:46.696396906+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T17:57:46.697880671+05:00","level":"INFO","msg":"GetClient called","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T17:57:46.974418222+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T17:57:46.975501827+05:00","level":"INFO","msg":"GetClient called","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T17:57:47.216366899+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:02:22.18366965+05:00","level":"INFO","msg":"GetClient called","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:02:22.489752498+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:02:22.491327165+05:00","level":"INFO","msg":"GetClient called","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:02:22.769646341+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:02:22.771055483+05:00","level":"INFO","msg":"GetClient called","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:02:23.049842831+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:07:17.77380632+05:00","level":"INFO","msg":"GetClient called","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:07:18.569666341+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:07:18.57072459+05:00","level":"INFO","msg":"GetClient called","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:07:18.81763313+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:07:18.818746484+05:00","level":"INFO","msg":"GetClient called","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:07:19.093466792+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:17:31.744532318+05:00","level":"INFO","msg":"GetClient called","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:17:32.015229323+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:17:32.01584597+05:00","level":"INFO","msg":"GetClient called","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:17:32.289380944+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:17:32.29040084+05:00","level":"INFO","msg":"GetClient called","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:17:32.574190665+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:18:14.897891194+05:00","level":"INFO","msg":"GetClient called","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:18:15.176100638+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:18:15.176905293+05:00","level":"INFO","msg":"GetClient called","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:18:15.455417236+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:18:15.456607017+05:00","level":"INFO","msg":"GetClient called","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:18:15.731432848+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:21:53.836356503+05:00","level":"INFO","msg":"GetClient called","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:21:54.131254185+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:21:54.132724916+05:00","level":"INFO","msg":"GetClient called","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:21:54.4088899+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:21:54.40965541+05:00","level":"INFO","msg":"GetClient called","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:21:54.658851138+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:24:35.308334011+05:00","level":"INFO","msg":"GetClient called","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:24:35.576499684+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"f8dbb69e-9d36-4f91-ad04-92cb3b33c274"}
+{"time":"2025-03-29T18:25:47.99713519+05:00","level":"INFO","msg":"GetClient called","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:25:48.258575371+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"60c032d6-e403-4eac-a1f5-ab6a8c436bb4"}
+{"time":"2025-03-29T18:25:48.260265265+05:00","level":"INFO","msg":"GetClient called","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}
+{"time":"2025-03-29T18:25:48.529383781+05:00","level":"INFO","msg":"Client retrieved successfully","client_id":"fde52a71-deca-422f-bd44-d7e1bf265201"}

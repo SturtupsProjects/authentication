@@ -61,11 +61,11 @@ func (w *workersRepo) GetSalaryByID(in *pb.ID) (*pb.SalaryResponse, error) {
 	query := `
 		SELECT u.user_id, u.first_name, u.last_name, u.phone_number, u.company_id,
 		       s.salary_id, s.currency_code, s.salary_amount, s.salary_date,
-		       to_char(s.created_at, 'YYYY-MM-DD'), 
-		       to_char(s.updated_at, 'YYYY-MM-DD')
-		FROM users u
-		LEFT JOIN staff_salary s ON u.user_id = s.user_id AND s.salary_id = $1
-		WHERE u.company_id = $2
+		       to_char(s.created_at, 'YYYY-MM-DD') as created_at,
+		       to_char(s.updated_at, 'YYYY-MM-DD') as updated_at
+		FROM staff_salary s
+		JOIN users u ON u.user_id = s.user_id
+		WHERE s.salary_id = $1 AND u.company_id = $2
 	`
 
 	var resp pb.SalaryResponse

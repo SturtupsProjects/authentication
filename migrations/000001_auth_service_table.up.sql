@@ -1,5 +1,5 @@
 create type role as enum ('admin', 'owner', 'worker');
-create type type as enum ('client', 'suplier');
+create type type as enum ('client', 'supplier');
 create type type_client as enum ('street', 'client');
 
 create type currency_type as enum ('USD', 'UZS');

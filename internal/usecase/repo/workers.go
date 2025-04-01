@@ -343,8 +343,8 @@ func (w *workersRepo) GetAdjustmentByID(in *pb.ID) (*pb.AdjustmentResponse, erro
 		       to_char(a.created_at, 'YYYY-MM-DD HH24:MI:SS'), 
 		       to_char(a.updated_at, 'YYYY-MM-DD HH24:MI:SS')
 		FROM users u
-		LEFT JOIN salary_adjustments a ON u.user_id = a.user_id AND a.adjustment_id = $1
-		WHERE u.company_id = $2
+		INNER JOIN salary_adjustments a ON u.user_id = a.user_id
+		WHERE a.adjustment_id = $1 AND u.company_id = $2
 		LIMIT 1
 	`
 
@@ -370,6 +370,9 @@ func (w *workersRepo) GetAdjustmentByID(in *pb.ID) (*pb.AdjustmentResponse, erro
 			&updatedAt,
 		)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("adjustment notfount")
+		}
 		return nil, fmt.Errorf("GetAdjustmentByID: %w", err)
 	}
 

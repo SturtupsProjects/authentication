@@ -521,12 +521,12 @@ func (w *workersRepo) ListAdjustments(in *pb.GetAdjustmentRequest) (*pb.Adjustme
 }
 
 func (w *workersRepo) GetWorkerAllInfo(in *pb.ID) (*pb.WorkerAllInfo, error) {
-	// Получаем данные пользователя и зарплату одним запросом.
+
 	query := `
 		SELECT u.user_id, u.first_name, u.last_name, u.phone_number, u.email, u.role, u.company_id,
 		       s.salary_id, s.currency_code, s.salary_amount, s.salary_date,
-		       to_char(s.created_at, 'YYYY-MM-DD'), 
-		       to_char(s.updated_at, 'YYYY-MM-DD')
+		       to_char(s.created_at, 'YYYY-MM-DD') as s_created_at, 
+		       to_char(s.updated_at, 'YYYY-MM-DD') as s_updated_at
 		FROM users u
 		LEFT JOIN staff_salary s ON u.user_id = s.user_id
 		WHERE u.user_id = $1 AND u.company_id = $2
@@ -557,19 +557,24 @@ func (w *workersRepo) GetWorkerAllInfo(in *pb.ID) (*pb.WorkerAllInfo, error) {
 		return nil, fmt.Errorf("GetWorkerAllInfo user/salary: %w", err)
 	}
 
-	// Заполняем данные зарплаты, если они есть.
-	if salaryId.Valid {
-		resp.Salary.SalaryId = salaryId.String
+	if salaryId.Valid || currencyCode.Valid || amount.Valid || salaryDate.Valid {
+		if resp.Salary == nil {
+			resp.Salary = &pb.Salary{}
+		}
+		if salaryId.Valid {
+			resp.Salary.SalaryId = salaryId.String
+		}
+		if currencyCode.Valid {
+			resp.Salary.CurrencyCode = currencyCode.String
+		}
+		if amount.Valid {
+			resp.Salary.Amount = amount.Float64
+		}
+		if salaryDate.Valid {
+			resp.Salary.SalaryDate = salaryDate.String
+		}
 	}
-	if currencyCode.Valid {
-		resp.Salary.CurrencyCode = currencyCode.String
-	}
-	if amount.Valid {
-		resp.Salary.Amount = amount.Float64
-	}
-	if salaryDate.Valid {
-		resp.Salary.SalaryDate = salaryDate.String
-	}
+
 	if sCreatedAt.Valid {
 		resp.CreatedAt = sCreatedAt.String
 	}
@@ -577,12 +582,12 @@ func (w *workersRepo) GetWorkerAllInfo(in *pb.ID) (*pb.WorkerAllInfo, error) {
 		resp.UpdatedAt = sUpdatedAt.String
 	}
 
-	// Получаем корректировки для пользователя.
 	adjQuery := `
 		SELECT adjustment_id, adjustment_type, currency_code, adjustment_amount, adjustment_date,
-		       is_active, to_char(created_at, 'YYYY-MM-DD HH24:MI:SS'), to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS')
+		       is_active, to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') as adj_created_at,
+		       to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS') as adj_updated_at
 		FROM salary_adjustments
-		WHERE user_id = $1
+		WHERE user_id = $1 AND is_active = 'true'
 		ORDER BY adjustment_date DESC
 	`
 	rows, err := w.db.Query(adjQuery, in.Id)
@@ -594,19 +599,19 @@ func (w *workersRepo) GetWorkerAllInfo(in *pb.ID) (*pb.WorkerAllInfo, error) {
 	var adjustments []*pb.Adjustment
 	for rows.Next() {
 		var adjustment pb.Adjustment
-		var adjustmentId, adjustmentType, currencyCode, adjustmentDate, createdAt, updatedAt sql.NullString
+		var adjustmentId, adjustmentType, adjCurrencyCode, adjustmentDate, adjCreatedAt, adjUpdatedAt sql.NullString
 		var adjustmentAmount sql.NullFloat64
 		var isActive sql.NullString
 
 		if err = rows.Scan(
 			&adjustmentId,
 			&adjustmentType,
-			&currencyCode,
+			&adjCurrencyCode,
 			&adjustmentAmount,
 			&adjustmentDate,
 			&isActive,
-			&createdAt,
-			&updatedAt,
+			&adjCreatedAt,
+			&adjUpdatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("GetWorkerAllInfo adjustments scan: %w", err)
 		}
@@ -617,8 +622,8 @@ func (w *workersRepo) GetWorkerAllInfo(in *pb.ID) (*pb.WorkerAllInfo, error) {
 		if adjustmentType.Valid {
 			adjustment.AdjustmentType = adjustmentType.String
 		}
-		if currencyCode.Valid {
-			adjustment.CurrencyCode = currencyCode.String
+		if adjCurrencyCode.Valid {
+			adjustment.CurrencyCode = adjCurrencyCode.String
 		}
 		if adjustmentAmount.Valid {
 			adjustment.Amount = adjustmentAmount.Float64
@@ -629,14 +634,18 @@ func (w *workersRepo) GetWorkerAllInfo(in *pb.ID) (*pb.WorkerAllInfo, error) {
 		if isActive.Valid {
 			adjustment.IsActive = isActive.String
 		}
-		if createdAt.Valid {
-			adjustment.CreatedAt = createdAt.String
+		if adjCreatedAt.Valid {
+			adjustment.CreatedAt = adjCreatedAt.String
 		}
-		if updatedAt.Valid {
-			adjustment.UpdatedAt = updatedAt.String
+		if adjUpdatedAt.Valid {
+			adjustment.UpdatedAt = adjUpdatedAt.String
 		}
 
 		adjustments = append(adjustments, &adjustment)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("GetWorkerAllInfo adjustments iteration: %w", err)
 	}
 	resp.Adjustments = adjustments
 
